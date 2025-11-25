@@ -1,0 +1,360 @@
+Uri: https://alerts.in.ua/
+File Name: E:\AirAlert\alerts.in.ua\index.htm
+Content Type: text/html
+
+Uri: https://alerts.in.ua/?v=e14fde24
+File Name: E:\AirAlert\alerts.in.ua\index-1.htm
+Content Type: text/html
+
+Uri: https://alerts.in.ua/assets/charity-funds/banners/alerts-ua.jpg
+File Name: E:\AirAlert\alerts.in.ua\assets\charity-funds\banners\alerts-ua.jpg
+Content Type: image/jpeg
+
+Uri: https://alerts.in.ua/assets/charity-funds/banners/boryviter-logo.png
+File Name: E:\AirAlert\alerts.in.ua\assets\charity-funds\banners\boryviter-logo.png
+Content Type: image/png
+
+Uri: https://alerts.in.ua/assets/charity-funds/banners/boryviter.jpg
+File Name: E:\AirAlert\alerts.in.ua\assets\charity-funds\banners\boryviter.jpg
+Content Type: image/jpeg
+
+Uri: https://alerts.in.ua/assets/charity-funds/banners/dodosocks-donetsk-sun-small.png
+File Name: E:\AirAlert\alerts.in.ua\assets\charity-funds\banners\dodosocks-donetsk-sun-small.png
+Content Type: image/png
+
+Uri: https://alerts.in.ua/assets/charity-funds/banners/dou-award.jpg
+File Name: E:\AirAlert\alerts.in.ua\assets\charity-funds\banners\dou-award.jpg
+Content Type: image/jpeg
+
+Uri: https://alerts.in.ua/assets/charity-funds/banners/hospitaliers-bg.png
+File Name: E:\AirAlert\alerts.in.ua\assets\charity-funds\banners\hospitaliers-bg.png
+Content Type: image/png
+
+Uri: https://alerts.in.ua/assets/charity-funds/banners/hospitaliers-logo.png
+File Name: E:\AirAlert\alerts.in.ua\assets\charity-funds\banners\hospitaliers-logo.png
+Content Type: image/png
+
+Uri: https://alerts.in.ua/assets/charity-funds/banners/nova-poshta-white-mobile.png
+File Name: E:\AirAlert\alerts.in.ua\assets\charity-funds\banners\nova-poshta-white-mobile.png
+Content Type: image/png
+
+Uri: https://alerts.in.ua/assets/charity-funds/banners/nova-poshta-white-small.png
+File Name: E:\AirAlert\alerts.in.ua\assets\charity-funds\banners\nova-poshta-white-small.png
+Content Type: image/png
+
+Uri: https://alerts.in.ua/assets/charity-funds/banners/ppo-light.jpg
+File Name: E:\AirAlert\alerts.in.ua\assets\charity-funds\banners\ppo-light.jpg
+Content Type: image/jpeg
+
+Uri: https://alerts.in.ua/assets/charity-funds/banners/ppo.jpg
+File Name: E:\AirAlert\alerts.in.ua\assets\charity-funds\banners\ppo.jpg
+Content Type: image/jpeg
+
+Uri: https://alerts.in.ua/assets/charity-funds/banners/safehome-bg.jpg
+File Name: E:\AirAlert\alerts.in.ua\assets\charity-funds\banners\safehome-bg.jpg
+Content Type: image/jpeg
+
+Uri: https://alerts.in.ua/assets/charity-funds/banners/savelife-small.png
+File Name: E:\AirAlert\alerts.in.ua\assets\charity-funds\banners\savelife-small.png
+Content Type: image/png
+
+Uri: https://alerts.in.ua/assets/charity-funds/banners/savelife.svg
+File Name: E:\AirAlert\alerts.in.ua\assets\charity-funds\banners\savelife.svg
+Content Type: image/svg+xml
+
+Uri: https://alerts.in.ua/assets/charity-funds/banners/sniping-bg.jpg
+File Name: E:\AirAlert\alerts.in.ua\assets\charity-funds\banners\sniping-bg.jpg
+Content Type: image/jpeg
+
+Uri: https://alerts.in.ua/assets/charity-funds/banners/uafirstaid-logo.jpg
+File Name: E:\AirAlert\alerts.in.ua\assets\charity-funds\banners\uafirstaid-logo.jpg
+Content Type: image/jpeg
+
+Uri: https://alerts.in.ua/assets/charity-funds/banners/uafirstaid.jpg
+File Name: E:\AirAlert\alerts.in.ua\assets\charity-funds\banners\uafirstaid.jpg
+Content Type: image/jpeg
+
+Uri: https://alerts.in.ua/assets/charity-funds/banners/uafirstaid2-logo.png
+File Name: E:\AirAlert\alerts.in.ua\assets\charity-funds\banners\uafirstaid2-logo.png
+Content Type: image/png
+
+Uri: https://alerts.in.ua/assets/charity-funds/banners/uafirstaid2.jpg
+File Name: E:\AirAlert\alerts.in.ua\assets\charity-funds\banners\uafirstaid2.jpg
+Content Type: image/jpeg
+
+Uri: https://alerts.in.ua/assets/charity-funds/dou.svg
+File Name: E:\AirAlert\alerts.in.ua\assets\charity-funds\dou.svg
+Content Type: image/svg+xml
+
+Uri: https://alerts.in.ua/assets/cursors/eraser.svg
+File Name: E:\AirAlert\alerts.in.ua\assets\cursors\eraser.svg
+Content Type: image/svg+xml
+
+Uri: https://alerts.in.ua/assets/cursors/pen.svg
+File Name: E:\AirAlert\alerts.in.ua\assets\cursors\pen.svg
+Content Type: image/svg+xml
+
+Uri: https://alerts.in.ua/assets/emoji/announcement.png
+File Name: E:\AirAlert\alerts.in.ua\assets\emoji\announcement.png
+Content Type: image/png
+
+Uri: https://alerts.in.ua/assets/emoji/ballistic.png
+File Name: E:\AirAlert\alerts.in.ua\assets\emoji\ballistic.png
+Content Type: image/png
+
+Uri: https://alerts.in.ua/assets/emoji/fpv-drones.png
+File Name: E:\AirAlert\alerts.in.ua\assets\emoji\fpv-drones.png
+Content Type: image/png
+
+Uri: https://alerts.in.ua/assets/emoji/guided-aerial-bombs.png
+File Name: E:\AirAlert\alerts.in.ua\assets\emoji\guided-aerial-bombs.png
+Content Type: image/png
+
+Uri: https://alerts.in.ua/assets/emoji/lamp.png
+File Name: E:\AirAlert\alerts.in.ua\assets\emoji\lamp.png
+Content Type: image/png
+
+Uri: https://alerts.in.ua/assets/emoji/right-arrow.png
+File Name: E:\AirAlert\alerts.in.ua\assets\emoji\right-arrow.png
+Content Type: image/png
+
+Uri: https://alerts.in.ua/assets/emoji/rocket.png
+File Name: E:\AirAlert\alerts.in.ua\assets\emoji\rocket.png
+Content Type: image/png
+
+Uri: https://alerts.in.ua/assets/emoji/shahed.png
+File Name: E:\AirAlert\alerts.in.ua\assets\emoji\shahed.png
+Content Type: image/png
+
+Uri: https://alerts.in.ua/assets/emoji/strategic-aircraft.png
+File Name: E:\AirAlert\alerts.in.ua\assets\emoji\strategic-aircraft.png
+Content Type: image/png
+
+Uri: https://alerts.in.ua/assets/emoji/tactic-aircraft.png
+File Name: E:\AirAlert\alerts.in.ua\assets\emoji\tactic-aircraft.png
+Content Type: image/png
+
+Uri: https://alerts.in.ua/assets/emoji/unknown-drone.png
+File Name: E:\AirAlert\alerts.in.ua\assets\emoji\unknown-drone.png
+Content Type: image/png
+
+Uri: https://alerts.in.ua/assets/emoji/warning.png
+File Name: E:\AirAlert\alerts.in.ua\assets\emoji\warning.png
+Content Type: image/png
+
+Uri: https://alerts.in.ua/assets/favicon.png
+File Name: E:\AirAlert\alerts.in.ua\assets\favicon.png
+Content Type: image/png
+
+Uri: https://alerts.in.ua/assets/icon-256x256.png
+File Name: E:\AirAlert\alerts.in.ua\assets\icon-256x256.png
+Content Type: image/png
+
+Uri: https://alerts.in.ua/assets/icon-512x512.png
+File Name: E:\AirAlert\alerts.in.ua\assets\icon-512x512.png
+Content Type: image/png
+
+Uri: https://alerts.in.ua/assets/scripts/e14fde24.js
+File Name: E:\AirAlert\alerts.in.ua\assets\scripts\e14fde24.js
+Content Type: application/javascript
+
+Uri: https://alerts.in.ua/assets/scripts/error-handlers.js?v=22
+File Name: E:\AirAlert\alerts.in.ua\assets\scripts\error-handlers.js
+Content Type: application/javascript
+
+Uri: https://alerts.in.ua/assets/styles/88ca2ec6.css
+File Name: E:\AirAlert\alerts.in.ua\assets\styles\88ca2ec6.css
+Content Type: text/css
+
+Uri: https://alerts.in.ua/cf-fonts/s/fira-sans-extra-condensed/5.0.11/cyrillic/500/normal.woff2
+File Name: E:\AirAlert\alerts.in.ua\cf-fonts\s\fira-sans-extra-condensed\5.0.11\cyrillic\500\normal.woff2
+Content Type: font/woff2
+
+Uri: https://alerts.in.ua/crh
+File Name: E:\AirAlert\alerts.in.ua\crh.html
+Content Type: text/html
+
+Uri: https://alerts.in.ua/crh?v=e14fde24
+File Name: E:\AirAlert\alerts.in.ua\crh-1.html
+Content Type: text/html
+
+Uri: https://alerts.in.ua/de
+File Name: E:\AirAlert\alerts.in.ua\de.html
+Content Type: text/html
+
+Uri: https://alerts.in.ua/de?v=e14fde24
+File Name: E:\AirAlert\alerts.in.ua\de-1.html
+Content Type: text/html
+
+Uri: https://alerts.in.ua/en
+File Name: E:\AirAlert\alerts.in.ua\en.html
+Content Type: text/html
+
+Uri: https://alerts.in.ua/en?v=e14fde24
+File Name: E:\AirAlert\alerts.in.ua\en-1.html
+Content Type: text/html
+
+Uri: https://alerts.in.ua/favicon.ico
+File Name: E:\AirAlert\alerts.in.ua\favicon.ico
+Content Type: image/vnd.microsoft.icon
+
+Uri: https://alerts.in.ua/fr
+File Name: E:\AirAlert\alerts.in.ua\fr.html
+Content Type: text/html
+
+Uri: https://alerts.in.ua/fr?v=e14fde24
+File Name: E:\AirAlert\alerts.in.ua\fr-1.html
+Content Type: text/html
+
+Uri: https://alerts.in.ua/ja
+File Name: E:\AirAlert\alerts.in.ua\ja.html
+Content Type: text/html
+
+Uri: https://alerts.in.ua/ja?v=e14fde24
+File Name: E:\AirAlert\alerts.in.ua\ja-1.html
+Content Type: text/html
+
+Uri: https://alerts.in.ua/lite
+File Name: E:\AirAlert\alerts.in.ua\lite.html
+Content Type: text/html
+
+Uri: https://alerts.in.ua/manifest.json
+File Name: E:\AirAlert\alerts.in.ua\manifest.json
+Content Type: application/json
+
+Uri: https://alerts.in.ua/pl
+File Name: E:\AirAlert\alerts.in.ua\pl.html
+Content Type: text/html
+
+Uri: https://alerts.in.ua/pl?v=e14fde24
+File Name: E:\AirAlert\alerts.in.ua\pl-1.html
+Content Type: text/html
+
+Uri: https://alerts.in.ua/splashscreens/ipadpro1_splash.png
+File Name: E:\AirAlert\alerts.in.ua\splashscreens\ipadpro1_splash.png
+Content Type: image/png
+
+Uri: https://alerts.in.ua/splashscreens/ipadpro2_splash.png
+File Name: E:\AirAlert\alerts.in.ua\splashscreens\ipadpro2_splash.png
+Content Type: image/png
+
+Uri: https://alerts.in.ua/splashscreens/ipadpro3_splash.png
+File Name: E:\AirAlert\alerts.in.ua\splashscreens\ipadpro3_splash.png
+Content Type: image/png
+
+Uri: https://alerts.in.ua/splashscreens/ipad_splash.png
+File Name: E:\AirAlert\alerts.in.ua\splashscreens\ipad_splash.png
+Content Type: image/png
+
+Uri: https://alerts.in.ua/splashscreens/iphone6_splash.png
+File Name: E:\AirAlert\alerts.in.ua\splashscreens\iphone6_splash.png
+Content Type: image/png
+
+Uri: https://alerts.in.ua/splashscreens/iphoneplus_splash.png
+File Name: E:\AirAlert\alerts.in.ua\splashscreens\iphoneplus_splash.png
+Content Type: image/png
+
+Uri: https://alerts.in.ua/splashscreens/iphonexr_splash.png
+File Name: E:\AirAlert\alerts.in.ua\splashscreens\iphonexr_splash.png
+Content Type: image/png
+
+Uri: https://alerts.in.ua/splashscreens/iphonexsmax_splash.png
+File Name: E:\AirAlert\alerts.in.ua\splashscreens\iphonexsmax_splash.png
+Content Type: image/png
+
+Uri: https://alerts.in.ua/splashscreens/iphonex_splash.png
+File Name: E:\AirAlert\alerts.in.ua\splashscreens\iphonex_splash.png
+Content Type: image/png
+
+Uri: https://cdn.alerts.in.ua/assets/locations.json?v=5
+File Name: E:\AirAlert\alerts.in.ua\assets\locations.json
+Content Type: application/json
+
+Uri: https://cdn.alerts.in.ua/assets/maps/simplified.svg?v=4
+File Name: E:\AirAlert\alerts.in.ua\assets\maps\simplified.svg
+Content Type: image/svg+xml
+
+Uri: https://cdn.jsdelivr.net/npm/@vueform/slider@2.1.2/themes/default.css
+File Name: E:\AirAlert\alerts.in.ua\npm\@vueform\slider@2.1.2\themes\default.css
+Content Type: text/css
+
+Uri: https://cdn.rollbar.com/rollbarjs/refs/tags/v2.26.2/rollbar.min.js
+File Name: E:\AirAlert\alerts.in.ua\rollbarjs\refs\tags\v2.26.2\rollbar.min.js
+Content Type: application/javascript
+
+Uri: https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/brands.min.css
+File Name: E:\AirAlert\alerts.in.ua\ajax\libs\font-awesome\6.5.2\css\brands.min.css
+Content Type: text/css
+
+Uri: https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/fontawesome.min.css
+File Name: E:\AirAlert\alerts.in.ua\ajax\libs\font-awesome\6.5.2\css\fontawesome.min.css
+Content Type: text/css
+
+Uri: https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/regular.min.css
+File Name: E:\AirAlert\alerts.in.ua\ajax\libs\font-awesome\6.5.2\css\regular.min.css
+Content Type: text/css
+
+Uri: https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/solid.min.css
+File Name: E:\AirAlert\alerts.in.ua\ajax\libs\font-awesome\6.5.2\css\solid.min.css
+Content Type: text/css
+
+Uri: https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/webfonts/fa-brands-400.ttf
+File Name: E:\AirAlert\alerts.in.ua\ajax\libs\font-awesome\6.5.2\webfonts\fa-brands-400.ttf
+Content Type: application/octet-stream
+
+Uri: https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/webfonts/fa-brands-400.woff2
+File Name: E:\AirAlert\alerts.in.ua\ajax\libs\font-awesome\6.5.2\webfonts\fa-brands-400.woff2
+Content Type: application/octet-stream
+
+Uri: https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/webfonts/fa-regular-400.ttf
+File Name: E:\AirAlert\alerts.in.ua\ajax\libs\font-awesome\6.5.2\webfonts\fa-regular-400.ttf
+Content Type: application/octet-stream
+
+Uri: https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/webfonts/fa-regular-400.woff2
+File Name: E:\AirAlert\alerts.in.ua\ajax\libs\font-awesome\6.5.2\webfonts\fa-regular-400.woff2
+Content Type: application/octet-stream
+
+Uri: https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/webfonts/fa-solid-900.ttf
+File Name: E:\AirAlert\alerts.in.ua\ajax\libs\font-awesome\6.5.2\webfonts\fa-solid-900.ttf
+Content Type: application/octet-stream
+
+Uri: https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/webfonts/fa-solid-900.woff2
+File Name: E:\AirAlert\alerts.in.ua\ajax\libs\font-awesome\6.5.2\webfonts\fa-solid-900.woff2
+Content Type: application/octet-stream
+
+Uri: https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js
+File Name: E:\AirAlert\alerts.in.ua\ajax\libs\hammer.js\2.0.8\hammer.min.js
+Content Type: application/javascript
+
+Uri: https://cdnjs.cloudflare.com/ajax/libs/msgpack5/6.0.2/msgpack5.min.js
+File Name: E:\AirAlert\alerts.in.ua\ajax\libs\msgpack5\6.0.2\msgpack5.min.js
+Content Type: application/javascript
+
+Uri: https://cdnjs.cloudflare.com/ajax/libs/nosleep/0.12.0/NoSleep.min.js
+File Name: E:\AirAlert\alerts.in.ua\ajax\libs\nosleep\0.12.0\NoSleep.min.js
+Content Type: application/javascript
+
+Uri: https://cdnjs.cloudflare.com/ajax/libs/vue-i18n/8.27.2/vue-i18n.min.js
+File Name: E:\AirAlert\alerts.in.ua\ajax\libs\vue-i18n\8.27.2\vue-i18n.min.js
+Content Type: application/javascript
+
+Uri: https://cdnjs.cloudflare.com/ajax/libs/vue/2.7.14/vue.min.js
+File Name: E:\AirAlert\alerts.in.ua\ajax\libs\vue\2.7.14\vue.min.js
+Content Type: application/javascript
+
+Uri: https://fonts.googleapis.com/css2?family=Ubuntu+Condensed:wght@400;600&display=swap
+File Name: E:\AirAlert\alerts.in.ua\css2
+Content Type: text/css
+
+Uri: https://fonts.gstatic.com/s/ubuntucondensed/v17/u-4k0rCzjgs5J7oXnJcM_0kACGMtf-c.ttf
+File Name: E:\AirAlert\alerts.in.ua\s\ubuntucondensed\v17\u-4k0rCzjgs5J7oXnJcM_0kACGMtf-c.ttf
+Content Type: font/ttf
+
+Uri: https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015
+File Name: E:\AirAlert\alerts.in.ua\beacon.min.js\vcd15cbe7772f49c399c6a5babf22c1241717689176015
+Content Type: text/javascript
+
+Uri: https://www.googletagmanager.com/gtag/js?id=G-NRF8GZF8K4
+File Name: E:\AirAlert\alerts.in.ua\gtag\js
+Content Type: application/javascript
+
