@@ -63,7 +63,7 @@
         .modal-content {
             background: #222;
             padding: 20px;
-            width: 300px;
+            width: 320px;
             border-radius: 10px;
             text-align: center;
         }
@@ -86,11 +86,11 @@
 </div>
 
 <div id="menu">
-    <button onclick="openSettings()">Настройки</button>
+    <button onclick="openSettings()">Налаштування</button>
     <button id="adminPanelBtn" style="display:none;" onclick="openAlarmPanel()">Панель тривог</button>
 </div>
 
-<!-- Модалка настроек -->
+<!-- Модалка -->
 <div class="modal" id="settingsModal">
     <div class="modal-content">
         <h3>Налаштування</h3>
@@ -100,7 +100,6 @@
     </div>
 </div>
 
-<!-- Модалка входа -->
 <div class="modal" id="adminLoginModal">
     <div class="modal-content">
         <h3>Пароль організатора</h3>
@@ -113,7 +112,6 @@
     </div>
 </div>
 
-<!-- Модалка панели тревог -->
 <div class="modal" id="alarmPanelModal">
     <div class="modal-content">
         <h3>Оголошення тривоги</h3>
@@ -138,7 +136,11 @@
         </select>
 
         <br><br>
-        <button onclick="declareAlarm()">Оголосити</button>
+        <button onclick="declareAlarm()">Тривога по району</button>
+        <br><br>
+        <button onclick="declareAll()">Тривога по всій області</button>
+        <br><br>
+        <button onclick="clearAlarms()">Відбій</button>
         <br><br>
         <button onclick="closeAll()">Закрити</button>
     </div>
@@ -146,14 +148,16 @@
 
 <script>
 let svgDoc = null;
+let originalColors = {}; // Сохраняем исходные цвета
 
-/* ==== Исправленный загрузчик SVG ==== */
 function tryLoadSVG() {
     const mapObj = document.getElementById("map");
 
     if (mapObj.contentDocument) {
         svgDoc = mapObj.contentDocument;
-        console.log("SVG загружено успішно!");
+
+        // Сохраняем оригинальные цвета областей
+        saveOriginalColors();
         return true;
     }
     return false;
@@ -162,21 +166,17 @@ function tryLoadSVG() {
 document.getElementById("map").addEventListener("load", () => {
     setTimeout(() => {
         if (!tryLoadSVG()) {
-            console.warn("Повторна спроба завантаження SVG…");
 
             let attempts = 0;
             const interval = setInterval(() => {
                 attempts++;
-                if (tryLoadSVG()) {
-                    clearInterval(interval);
-                }
+                if (tryLoadSVG()) clearInterval(interval);
                 if (attempts > 20) clearInterval(interval);
             }, 200);
         }
     }, 200);
 });
 
-/* ==== Модалки ==== */
 function openSettings() { document.getElementById("settingsModal").style.display = "flex"; }
 function openAdminLogin() { document.getElementById("adminLoginModal").style.display = "flex"; }
 function openAlarmPanel() { document.getElementById("alarmPanelModal").style.display = "flex"; }
@@ -187,7 +187,6 @@ function closeAll() {
     document.getElementById("alarmPanelModal").style.display = "none";
 }
 
-/* ==== Пароль ==== */
 function checkPassword() {
     let input = document.getElementById("adminPassword").value;
     if (input === "Ntvf2011") {
@@ -199,36 +198,72 @@ function checkPassword() {
     }
 }
 
-/* ==== Цвета тревог ==== */
 function getAlarmColor(type) {
     switch(type) {
-        case "air": return "#ff0000";     // красный
-        case "artillery": return "#ff8c00"; // оранжевый
-        case "street": return "#ffff00";  // жёлтый
-        case "chemical": return "#00ff00"; // лайм
-        case "radiation": return "#8000ff"; // фиолетовый
+        case "air": return "#ff0000";
+        case "artillery": return "#ff8c00";
+        case "street": return "#ffff00";
+        case "chemical": return "#00ff00";
+        case "radiation": return "#8000ff";
         default: return "#555";
     }
 }
 
-/* ==== Тревога ==== */
+/* Сохраняем исходные цвета */
+function saveOriginalColors() {
+    const ids = [
+        "novhorod_rayon",
+        "chernihiv_rayon",
+        "chernihiv_city",
+        "koryukivka_rayon",
+        "nizhyn_rayon",
+        "pryluky_rayon"
+    ];
+
+    ids.forEach(id => {
+        let el = svgDoc.getElementById(id);
+        if (el) {
+            originalColors[id] = el.style.fill || el.getAttribute("fill") || "#cccccc";
+        }
+    });
+}
+
 function declareAlarm() {
-    if (!svgDoc) return alert("❌ Карта ще не завантажилась! Спробуйте ще раз через 1 секунду.");
+    if (!svgDoc) return alert("Карта ще не завантажилась!");
 
     let type = document.getElementById("alarmType").value;
     let region = document.getElementById("regionSelect").value;
-
     let area = svgDoc.getElementById(region);
 
-    if (!area) {
-        alert("❌ В SVG немає району: " + region);
-        return;
-    }
+    if (!area) return alert("❌ В SVG немає району: " + region);
 
     area.style.fill = getAlarmColor(type);
+    alert("Тривога по району встановлена!");
+}
 
-    alert("Тривогу встановлено!");
-    closeAll();
+function declareAll() {
+    if (!svgDoc) return alert("Карта ще не завантажилась!");
+
+    let type = document.getElementById("alarmType").value;
+    let color = getAlarmColor(type);
+
+    Object.keys(originalColors).forEach(id => {
+        let area = svgDoc.getElementById(id);
+        if (area) area.style.fill = color;
+    });
+
+    alert("Тривога по всій області встановлена!");
+}
+
+function clearAlarms() {
+    if (!svgDoc) return alert("Карта ще не завантажилась!");
+
+    Object.keys(originalColors).forEach(id => {
+        let area = svgDoc.getElementById(id);
+        if (area) area.style.fill = originalColors[id];
+    });
+
+    alert("Відбій! Область повернена до нормального стану.");
 }
 </script>
 
