@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Чернігівська область — Тривоги</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, onSnapshot, addDoc, deleteDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js';
+
+        // Firebase configuration - REPLACE WITH YOUR OWN
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Make db available globally
+        window.db = db;
+        window.collection = collection;
+        window.doc = doc;
+        window.setDoc = setDoc;
+        window.getDoc = getDoc;
+        window.getDocs = getDocs;
+        window.onSnapshot = onSnapshot;
+        window.addDoc = addDoc;
+        window.deleteDoc = deleteDoc;
+        window.updateDoc = updateDoc;
+    </script>
+</head>
+<body>
+
+<div id="legend">
+    <div class="legend-item">
+        <div class="legend-color" style="background-color: #9E3E31;"></div>
+        Повітряна тривога
+    </div>
+    <div class="legend-item">
+        <div class="legend-color" style="background-color: #B57D35;"></div>
+        Артобстріл
+    </div>
+    <div class="legend-item">
+        <div class="legend-color" style="background-color: #4DB377;"></div>
+        Вуличні бої
+    </div>
+    <div class="legend-item">
+        <div class="legend-color" style="background-color: #634DB3;"></div>
+        Хімічна загроза
+    </div>
+    <div class="legend-item">
+        <div class="legend-color" style="background-color: #FFF25E;"></div>
+        Радіація
+    </div>
+</div>
+
+<div id="map-container">
+    <object id="map" type="image/svg+xml" data="chernihiv_map.svg" onclick="openAlarmMenu()"></object>
+</div>
+
+<div id="menu">
+    <button onclick="openSettings()">Налаштування</button>
+    <button onclick="openAlarmMenu()">Історія тривог</button>
+    <button id="adminPanelBtn" style="display:none;" onclick="openAlarmPanel()">Панель тривог</button>
+</div>
+
+<!-- Модалка настроек -->
+<div class="modal" id="settingsModal">
+    <div class="modal-content">
+        <h3>Налаштування</h3>
+        <button onclick="openAdminLogin()">Вхід організатора</button>
+        <br><br>
+        <button onclick="toggleSound()">Увімкнути/Вимкнути звук</button>
+        <br><br>
+        <button onclick="exportHistory()">Експорт історії</button>
+        <br><br>
+        <button onclick="clearHistory()">Очистити історію</button>
+        <br><br>
+        <button onclick="closeAll()">Закрити</button>
+    </div>
+</div>
+
+<!-- Модалка логина -->
+<div class="modal" id="adminLoginModal">
+    <div class="modal-content">
+        <h3>Пароль організатора</h3>
+        <input type="password" id="adminPassword" placeholder="Введіть пароль"
+               style="padding:10px;width:90%;background:#333;color:white;border:none;border-radius:6px;">
+        <br><br>
+        <button onclick="checkPassword()">Увійти</button>
+        <br><br>
+        <button onclick="closeAll()">Закрити</button>
+    </div>
+</div>
+
+<!-- Панель тревог -->
+<div class="modal" id="alarmPanelModal">
+    <div class="modal-content">
+        <h3>Оголошення тривоги</h3>
+
+        <label>Тип тривоги:</label>
+        <select id="alarmType">
+            <option value="air">Повітряна тривога</option>
+            <option value="artillery">Артобстріл</option>
+            <option value="street">Вуличні бої</option>
+            <option value="chemical">Хімічна загроза</option>
+            <option value="radiation">Радіація</option>
+        </select>
+
+        <label>Район:</label>
+        <select id="regionSelect">
+            <option value="novhorod_rayon">Новгород-Сіверський район</option>
+            <option value="chernihiv_rayon">Чернігівський район</option>
+            <option value="chernihiv_city">м. Чернігів</option>
+            <option value="koryukivka_rayon">Корюківський район</option>
+            <option value="nizhyn_rayon">Ніжинський район</option>
+            <option value="pryluky_rayon">Прилуцький район</option>
+        </select>
+
+        <br><br>
+        <button onclick="declareAlarm()">Тривога по району</button>
+        <br><br>
+        <button onclick="declareAll()">Тривога по всій області</button>
+        <br><br>
+
+        <button onclick="clearOne()">Відбій по району</button>
+        <br><br>
+        <button onclick="clearAll()">Відбій по всій області</button>
+
+        <br><br>
+        <button onclick="closeAll()">Закрити</button>
+    </div>
+</div>
+
+<!-- Меню тревог -->
+<div class="modal" id="alarmMenuModal">
+    <div class="modal-content alarm-menu">
+        <h3>Меню тривог</h3>
+
+        <div class="alarm-section">
+            <h4>Поточні тривоги</h4>
+            <div id="currentAlarms"></div>
+        </div>
+
+        <div class="alarm-section">
+            <h4>Історія тривог</h4>
+            <div id="alarmHistory"></div>
+        </div>
+
+
+        <br><br>
+        <button onclick="closeAll()">Закрити</button>
+    </div>
+</div>
+
+<script>
+let svgDoc = null;
+let originalColors = {};
+let currentAlarms = {}; // Will be synced from Firestore
+let alarmHistory = []; // Will be synced from Firestore
+let soundEnabled = false;
+let audioContext = null;
+let unsubscribeCurrent = null;
+let unsubscribeHistory = null;
+let initialLoad = true;
+
+function tryLoadSVG() {
+    const mapObj = document.getElementById("map");
+    if (mapObj.contentDocument) {
+        svgDoc = mapObj.contentDocument;
+        saveOriginalColors();
+        setupFirestoreListeners();
+        return true;
+    }
+    return false;
+}
+
+function setupFirestoreListeners() {
+    if (window.db) {
+        // Listener for current alarms
+        unsubscribeCurrent = onSnapshot(collection(db, 'currentAlarms'), (snapshot) => {
+            const prevCount = Object.keys(currentAlarms).length;
+            const newAlarms = {};
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                newAlarms[doc.id] = {
+                    type: data.type,
+                    startTime: new Date(data.startTime),
+                    timerId: null
+                };
+            });
+            currentAlarms = newAlarms;
+            updateMapColors();
+            updateAlarmDisplay();
+            // Play sound if new alarms added and not initial load
+            if (!initialLoad && Object.keys(currentAlarms).length > prevCount && soundEnabled) {
+                playSound();
+            }
+            if (initialLoad) initialLoad = false;
+        });
+
+        // Listener for history
+        unsubscribeHistory = onSnapshot(collection(db, 'alarmHistory'), (snapshot) => {
+            alarmHistory = [];
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                alarmHistory.push({
+                    type: data.type,
+                    region: data.region,
+                    startTime: new Date(data.startTime),
+                    endTime: new Date(data.endTime),
+                    duration: data.duration
+                });
+            });
+            // Sort by startTime desc
+            alarmHistory.sort((a, b) => b.startTime - a.startTime);
+            updateAlarmDisplay();
+        });
+    } else {
+        // Load from localStorage
+        currentAlarms = JSON.parse(localStorage.getItem('currentAlarms') || '{}');
+        Object.keys(currentAlarms).forEach(region => {
+            currentAlarms[region].startTime = new Date(currentAlarms[region].startTime);
+        });
+        alarmHistory = JSON.parse(localStorage.getItem('alarmHistory') || '[]');
+        alarmHistory.forEach(item => {
+            item.startTime = new Date(item.startTime);
+            item.endTime = new Date(item.endTime);
+        });
+        updateMapColors();
+        updateAlarmDisplay();
+    }
+
+    // Set up periodic updates for color animations
+    setInterval(updateMapColors, 500);
+}
+
+function updateMapColors() {
+    if (!svgDoc) return;
+    // Reset all to original
+    Object.keys(originalColors).forEach(region => {
+        const area = svgDoc.getElementById(region);
+        if (area) area.style.fill = originalColors[region];
+    });
+    // Set active alarms
+    Object.keys(currentAlarms).forEach(region => {
+        const alarm = currentAlarms[region];
+        const area = svgDoc.getElementById(region);
+        if (area) {
+            const duration = new Date() - alarm.startTime;
+            area.style.fill = getAlarmColor(alarm.type, duration);
+        }
+    });
+}
+
+document.getElementById("map").addEventListener("load", () => {
+    setTimeout(() => {
+        let tries = 0;
+        const timer = setInterval(() => {
+            tries++;
+            if (tryLoadSVG()) clearInterval(timer);
+            if (tries > 20) clearInterval(timer);
+        }, 200);
+    }, 200);
+});
+
+// Also allow clicking the <object> wrapper to open the menu (fallback)
+document.getElementById('map').addEventListener('click', (e) => {
+    // If svgDoc is ready, let internal handlers handle it; otherwise open menu as fallback
+    if (!svgDoc) {
+        updateAlarmDisplay();
+        document.getElementById('alarmMenuModal').style.display = 'flex';
+    }
+});
+
+function openSettings() { document.getElementById("settingsModal").style.display = "flex"; }
+function openAdminLogin() { document.getElementById("adminLoginModal").style.display = "flex"; }
+function openAlarmPanel() { document.getElementById("alarmPanelModal").style.display = "flex"; }
+function openAlarmMenu() {
+    updateAlarmDisplay();
+    document.getElementById("alarmMenuModal").style.display = "flex";
+}
+function closeAll() {
+    document.getElementById("settingsModal").style.display = "none";
+    document.getElementById("adminLoginModal").style.display = "none";
+    document.getElementById("alarmPanelModal").style.display = "none";
+    document.getElementById("alarmMenuModal").style.display = "none";
+}
+
+function formatTime(date) {
+    return date.toLocaleString('uk-UA', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    });
+}
+
+function formatDuration(ms) {
+    const seconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    return `${hours.toString().padStart(2, '0')}:${(minutes % 60).toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}`;
+}
+
+function startTimer(region) {
+    // Timer is just for tracking, no display needed
+    // But we can update display every second
+    currentAlarms[region].timerId = setInterval(() => {
+        // Could update display if needed
+    }, 1000);
+}
+
+function updateAlarmDisplay() {
+    const currentDiv = document.getElementById('currentAlarms');
+    const historyDiv = document.getElementById('alarmHistory');
+
+    // Current alarms
+    currentDiv.innerHTML = '';
+    if (Object.keys(currentAlarms).length === 0) {
+        currentDiv.innerHTML = '<p>Немає активних тривог</p>';
+    } else {
+        Object.keys(currentAlarms).forEach(region => {
+            const alarm = currentAlarms[region];
+            const duration = new Date() - alarm.startTime;
+            const item = document.createElement('div');
+            item.className = 'alarm-item';
+            item.innerHTML = `
+                <strong>${getAlarmTypeName(alarm.type)}</strong> в ${getRegionName(region)}<br>
+                Початок: ${formatTime(alarm.startTime)}<br>
+                Тривалість: ${formatDuration(duration)}
+            `;
+            currentDiv.appendChild(item);
+        });
+    }
+
+    // History grouped by region: show header (region + last alarm summary) and table with columns: Тип тривоги | Період | Тривалість
+    historyDiv.innerHTML = '';
+    if (alarmHistory.length === 0) {
+        historyDiv.innerHTML = '<p>Історія порожня</p>';
+    } else {
+        // Group by region (keep chronological order newest first)
+        const grouped = {};
+        alarmHistory.slice().reverse().forEach(entry => {
+            if (!grouped[entry.region]) grouped[entry.region] = [];
+            grouped[entry.region].push(entry);
+        });
+
+        Object.keys(grouped).forEach(region => {
+            const list = grouped[region];
+            const latest = list[0];
+
+            const regionWrap = document.createElement('div');
+            regionWrap.className = 'history-region';
+
+            // Header showing region and last alarm summary like: "Прилуцький район Повітряна тривога 3 хв 12:00-12:03"
+            const minutes = Math.max(1, Math.round(latest.duration / 60000));
+            const header = document.createElement('h4');
+            header.textContent = `${getRegionName(region)} — ${getAlarmTypeName(latest.type)} ${minutes} хв ${formatTime(latest.startTime)} - ${formatTime(latest.endTime)}`;
+            regionWrap.appendChild(header);
+
+            // Table
+            const table = document.createElement('table');
+            table.className = 'history-table';
+            table.innerHTML = `
+                <thead>
+                    <tr><th>Тип тривоги</th><th>Період</th><th>Тривалість</th></tr>
+                </thead>
+                <tbody></tbody>
+            `;
+
+            const tbody = table.querySelector('tbody');
+            list.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${getAlarmTypeName(item.type)}</td>
+                    <td>${formatTime(item.startTime)} - ${formatTime(item.endTime)}</td>
+                    <td>${formatDuration(item.duration)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            regionWrap.appendChild(table);
+            historyDiv.appendChild(regionWrap);
+        });
+    }
+}
+
+function getAlarmTypeName(type) {
+    const names = {
+        air: 'Повітряна тривога',
+        artillery: 'Артобстріл',
+        street: 'Вуличні бої',
+        chemical: 'Хімічна загроза',
+        radiation: 'Радіація'
+    };
+    return names[type] || type;
+}
+
+function getRegionName(region) {
+    const names = {
+        novhorod_rayon: 'Новгород-Сіверський район',
+        chernihiv_rayon: 'Чернігівський район',
+        chernihiv_city: 'м. Чернігів',
+        koryukivka_rayon: 'Корюківський район',
+        nizhyn_rayon: 'Ніжинський район',
+        pryluky_rayon: 'Прилуцький район'
+    };
+    return names[region] || region;
+}
+
+function playSound() {
+    if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.5);
+}
+
+function toggleSound() {
+    soundEnabled = !soundEnabled;
+    alert(soundEnabled ? 'Звук увімкнено' : 'Звук вимкнено');
+}
+
+function exportHistory() {
+    const dataStr = JSON.stringify(alarmHistory, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    const exportFileDefaultName = 'alarm_history.json';
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+}
+
+async function clearHistory() {
+    if (confirm('Очистити історію тривог?')) {
+        if (window.db) {
+            const snapshot = await getDocs(collection(db, 'alarmHistory'));
+            const promises = [];
+            snapshot.forEach(doc => {
+                promises.push(deleteDoc(doc.ref));
+            });
+            await Promise.all(promises);
+        } else {
+            alarmHistory = [];
+            localStorage.setItem('alarmHistory', JSON.stringify(alarmHistory));
+            updateAlarmDisplay();
+        }
+        alert('Історія очищена');
+    }
+}
+
+function checkPassword() {
+    let input = document.getElementById("adminPassword").value;
+    if (input === "Ntvf2011") {
+        alert("Вхід успішний!");
+        document.getElementById("adminPanelBtn").style.display = "inline-block";
+        closeAll();
+    } else {
+        alert("Невірний пароль!");
+    }
+}
+
+function getAlarmColor(type, duration) {
+    let baseColor;
+    switch(type) {
+        case "air":
+            if (duration > 1800000) { // 30 min
+                baseColor = "#68281f";
+            } else {
+                // interpolate from #9E3E31 to #68281f over 30 min
+                let ratio = duration / 1800000;
+                let r1 = 0x9E, g1 = 0x3E, b1 = 0x31;
+                let r2 = 0x68, g2 = 0x28, b2 = 0x1f;
+                let r = Math.round(r1 + (r2 - r1) * ratio);
+                let g = Math.round(g1 + (g2 - g1) * ratio);
+                let b = Math.round(b1 + (b2 - b1) * ratio);
+                baseColor = `rgb(${r},${g},${b})`;
+            }
+            break;
+        case "artillery": return "#B57D35";
+        case "street": return "#4DB377";
+        case "chemical": return "#634DB3";
+        case "radiation": return "#FFF25E";
+        default: return "#555";
+    }
+
+    if (duration < 30000) { // 30s
+        let blink = Math.floor(duration / 500) % 2;
+        if (blink) {
+            baseColor = lightenColor(baseColor, 0.3);
+        } else {
+            baseColor = darkenColor(baseColor, 0.3);
+        }
+    }
+
+    return baseColor;
+}
+
+function lightenColor(color, percent) {
+    let match = color.match(/rgb\((\d+),(\d+),(\d+)\)/);
+    if (match) {
+        let r = Math.min(255, Math.round(parseInt(match[1]) * (1 + percent)));
+        let g = Math.min(255, Math.round(parseInt(match[2]) * (1 + percent)));
+        let b = Math.min(255, Math.round(parseInt(match[3]) * (1 + percent)));
+        return `rgb(${r},${g},${b})`;
+    }
+    return color;
+}
+
+function darkenColor(color, percent) {
+    let match = color.match(/rgb\((\d+),(\d+),(\d+)\)/);
+    if (match) {
+        let r = Math.max(0, Math.round(parseInt(match[1]) * (1 - percent)));
+        let g = Math.max(0, Math.round(parseInt(match[2]) * (1 - percent)));
+        let b = Math.max(0, Math.round(parseInt(match[3]) * (1 - percent)));
+        return `rgb(${r},${g},${b})`;
+    }
+    return color;
+}
+
+function saveOriginalColors() {
+    const ids = [
+        "novhorod_rayon",
+        "chernihiv_rayon",
+        "chernihiv_city",
+        "koryukivka_rayon",
+        "nizhyn_rayon",
+        "pryluky_rayon"
+    ];
+
+    ids.forEach(id => {
+        let el = svgDoc.getElementById(id);
+        if (el) {
+            el.style.fill = "#2E294F";
+            originalColors[id] = "#2E294F";
+            // Prevent click on regions from opening menu
+            el.addEventListener('click', (e) => e.stopPropagation());
+        }
+    });
+
+    // Add click on map background to open alarm menu and hover effects on SVG root
+    try {
+        const svgRoot = svgDoc.documentElement || svgDoc;
+        if (svgRoot) {
+            // Click anywhere on the SVG root opens the alarm menu
+            svgRoot.addEventListener('click', (e) => {
+                // Prevent clicks on individual regions from bubbling (those have stopPropagation)
+                updateAlarmDisplay();
+                document.getElementById('alarmMenuModal').style.display = 'flex';
+            });
+
+            // Hover highlight on the whole SVG
+            svgRoot.addEventListener('mouseover', () => {
+                try { svgRoot.style.filter = 'brightness(1.12)'; } catch (err) { /* ignore */ }
+            });
+            svgRoot.addEventListener('mouseout', () => {
+                try { svgRoot.style.filter = 'none'; } catch (err) { /* ignore */ }
+            });
+        }
+    } catch (e) {
+        console.log('Не вдалось повісити обробники на SVG root:', e);
+    }
+}
+
+async function declareAlarm() {
+    let type = document.getElementById("alarmType").value;
+    let region = document.getElementById("regionSelect").value;
+
+    if (window.db) {
+        // Check if already active
+        const docRef = doc(db, 'currentAlarms', region);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            return alert("Тривога вже активна в цьому районі!");
+        }
+
+        const startTime = new Date();
+        await setDoc(docRef, {
+            type: type,
+            startTime: startTime.toISOString()
+        });
+    } else {
+        if (currentAlarms[region]) {
+            return alert("Тривога вже активна в цьому районі!");
+        }
+
+        const startTime = new Date();
+        currentAlarms[region] = {
+            type: type,
+            startTime: startTime
+        };
+        localStorage.setItem('currentAlarms', JSON.stringify(currentAlarms, (key, value) => {
+            if (value instanceof Date) return value.toISOString();
+            return value;
+        }));
+        updateMapColors();
+    }
+    alert("Тривога по району встановлена!");
+}
+
+async function declareAll() {
+    let type = document.getElementById("alarmType").value;
+    const startTime = new Date();
+
+    if (window.db) {
+        const regions = Object.keys(originalColors);
+        for (const region of regions) {
+            const docRef = doc(db, 'currentAlarms', region);
+            const docSnap = await getDoc(docRef);
+            if (!docSnap.exists()) {
+                await setDoc(docRef, {
+                    type: type,
+                    startTime: startTime.toISOString()
+                });
+            }
+        }
+    } else {
+        const regions = Object.keys(originalColors);
+        for (const region of regions) {
+            if (!currentAlarms[region]) {
+                currentAlarms[region] = {
+                    type: type,
+                    startTime: startTime
+                };
+            }
+        }
+        localStorage.setItem('currentAlarms', JSON.stringify(currentAlarms, (key, value) => {
+            if (value instanceof Date) return value.toISOString();
+            return value;
+        }));
+        updateMapColors();
+    }
+    alert("Тривога по всій області встановлена!");
+}
+
+async function clearOne() {
+    let region = document.getElementById("regionSelect").value;
+
+    if (window.db) {
+        const docRef = doc(db, 'currentAlarms', region);
+        const docSnap = await getDoc(docRef);
+        if (!docSnap.exists()) {
+            return alert("Тривоги немає в цьому районі!");
+        }
+
+        const data = docSnap.data();
+        const startTime = new Date(data.startTime);
+        const endTime = new Date();
+        const duration = endTime - startTime;
+
+        // Add to history
+        await addDoc(collection(db, 'alarmHistory'), {
+            type: data.type,
+            region: region,
+            startTime: startTime.toISOString(),
+            endTime: endTime.toISOString(),
+            duration: duration
+        });
+
+        // Remove from current
+        await deleteDoc(docRef);
+    } else {
+        if (!currentAlarms[region]) {
+            return alert("Тривоги немає в цьому районі!");
+        }
+
+        const data = currentAlarms[region];
+        const startTime = data.startTime;
+        const endTime = new Date();
+        const duration = endTime - startTime;
+
+        alarmHistory.push({
+            type: data.type,
+            region: region,
+            startTime: startTime,
+            endTime: endTime,
+            duration: duration
+        });
+        delete currentAlarms[region];
+        localStorage.setItem('currentAlarms', JSON.stringify(currentAlarms, (key, value) => {
+            if (value instanceof Date) return value.toISOString();
+            return value;
+        }));
+        localStorage.setItem('alarmHistory', JSON.stringify(alarmHistory, (key, value) => {
+            if (value instanceof Date) return value.toISOString();
+            return value;
+        }));
+        updateMapColors();
+        updateAlarmDisplay();
+    }
+    alert("Відбій по району виконано!");
+}
+
+function clearAll() {
+    const endTime = new Date();
+
+    if (window.db) {
+        // Get all current alarms
+        getDocs(collection(db, 'currentAlarms')).then(snapshot => {
+            const promises = [];
+            snapshot.forEach(docSnap => {
+                const data = docSnap.data();
+                const region = docSnap.id;
+                const startTime = new Date(data.startTime);
+                const duration = endTime - startTime;
+
+                // Add to history
+                promises.push(addDoc(collection(db, 'alarmHistory'), {
+                    type: data.type,
+                    region: region,
+                    startTime: startTime.toISOString(),
+                    endTime: endTime.toISOString(),
+                    duration: duration
+                }));
+
+                // Delete current
+                promises.push(deleteDoc(doc(db, 'currentAlarms', region)));
+            });
+
+            Promise.all(promises).then(() => {
+                alert("Відбій по всій області виконано!");
+            });
+        });
+    } else {
+        Object.keys(currentAlarms).forEach(region => {
+            const data = currentAlarms[region];
+            const startTime = data.startTime;
+            const duration = endTime - startTime;
+
+            alarmHistory.push({
+                type: data.type,
+                region: region,
+                startTime: startTime,
+                endTime: endTime,
+                duration: duration
+            });
+        });
+        currentAlarms = {};
+        localStorage.setItem('currentAlarms', JSON.stringify(currentAlarms));
+        localStorage.setItem('alarmHistory', JSON.stringify(alarmHistory, (key, value) => {
+            if (value instanceof Date) return value.toISOString();
+            return value;
+        }));
+        updateMapColors();
+        updateAlarmDisplay();
+        alert("Відбій по всій області виконано!");
+    }
+}
+</script>
+
+</body>
+</html>
