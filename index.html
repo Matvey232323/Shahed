@@ -1,0 +1,2357 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>TalkTok - Видеоплатформа</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #000000;
+            --bg-secondary: #121212;
+            --bg-tertiary: #1e1e1e;
+            --text-primary: #ffffff;
+            --text-secondary: #a8a8a8;
+            --accent: #ffffff;
+            --accent-secondary: #f8f8f8;
+            --like-color: #ff2d55;
+            --border-color: #2a2a2a;
+            --safe-area-inset-top: env(safe-area-inset-top);
+            --safe-area-inset-bottom: env(safe-area-inset-bottom);
+            --transition-speed: 0.3s;
+            --transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+        }
+        
+        /* Основной контейнер */
+        .app-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            padding-top: var(--safe-area-inset-top);
+            padding-bottom: var(--safe-area-inset-bottom);
+        }
+        
+        /* Навигационная панель - всегда видимая */
+        .navbar {
+            position: fixed;
+            top: var(--safe-area-inset-top);
+            left: 0;
+            right: 0;
+            height: 56px;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: var(--bg-primary);
+            z-index: 1000;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .nav-icon {
+            font-size: 20px;
+            color: var(--text-primary);
+            position: relative;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background-color: var(--like-color);
+            color: white;
+            font-size: 10px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        
+        /* Лента видео */
+        .video-feed {
+            position: absolute;
+            top: 56px;
+            left: 0;
+            right: 0;
+            bottom: 60px;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            background-color: var(--bg-primary);
+        }
+        
+        .video-feed::-webkit-scrollbar {
+            display: none;
+        }
+        
+        /* Видео контейнер - ИСПРАВЛЕНО: ровное расположение */
+        .video-item {
+            position: relative;
+            width: 100%;
+            height: calc(100vh - 116px);
+            min-height: calc(100vh - 116px);
+            scroll-snap-align: start;
+            overflow: hidden;
+            background-color: var(--bg-primary);
+        }
+        
+        .video-player {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background-color: var(--bg-secondary);
+        }
+        
+        /* Панель информации о видео - ИСПРАВЛЕНО: не перекрывает кнопки */
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 60px; /* Оставляем место для панели действий снизу */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 16px;
+            background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        
+        .video-info {
+            width: 100%;
+            pointer-events: auto;
+            margin-bottom: 80px; /* Отступ для панели действий */
+        }
+        
+        .creator-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .creator-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--accent);
+            margin-right: 12px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        
+        .creator-details {
+            flex: 1;
+            min-width: 0;
+            margin-right: 10px; /* Отступ перед кнопкой подписки */
+        }
+        
+        .creator-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+        }
+        
+        .creator-tagline {
+            font-size: 14px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .follow-btn {
+            background-color: var(--accent);
+            color: var(--bg-primary);
+            border: none;
+            padding: 6px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+        
+        .video-caption {
+            font-size: 15px;
+            line-height: 1.4;
+            margin-bottom: 12px;
+            max-height: 63px;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            cursor: pointer;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .hashtags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .hashtag {
+            font-size: 14px;
+            color: var(--accent);
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 4px 10px;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+        
+        /* Боковые кнопки взаимодействия - ИСПРАВЛЕНО: не заходят на описание */
+        .video-actions {
+            position: absolute;
+            right: 16px;
+            bottom: 120px; /* Подняли выше, чтобы не перекрывало описание */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            pointer-events: auto;
+            z-index: 10;
+        }
+        
+        .action-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+        }
+        
+        .action-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .action-icon.liked {
+            background-color: rgba(255, 45, 85, 0.2);
+            color: var(--like-color);
+            border-color: rgba(255, 45, 85, 0.3);
+        }
+        
+        .action-count {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .action-count.liked {
+            color: var(--like-color);
+        }
+        
+        /* Нижняя навигация - всегда видимая */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background-color: var(--bg-primary);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding-bottom: var(--safe-area-inset-bottom);
+            z-index: 1000;
+        }
+        
+        .nav-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            width: 60px;
+            height: 100%;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+        
+        .nav-button.active {
+            color: var(--text-primary);
+        }
+        
+        .nav-icon-large {
+            font-size: 22px;
+        }
+        
+        .nav-label {
+            font-size: 10px;
+            font-weight: 500;
+        }
+        
+        .create-button {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background-color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: -20px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .create-button i {
+            color: var(--bg-primary);
+            font-size: 20px;
+        }
+        
+        /* Страница поиска - ВОЗВРАЩАЕМ красивый поиск */
+        .search-page {
+            position: absolute;
+            top: 56px;
+            left: 0;
+            right: 0;
+            bottom: 60px;
+            background-color: var(--bg-primary);
+            padding: 16px;
+            overflow-y: auto;
+            display: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .search-page.active {
+            display: block;
+        }
+        
+        .search-header {
+            margin-bottom: 20px;
+        }
+        
+        .search-input-container {
+            display: flex;
+            align-items: center;
+            background-color: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 10px 16px;
+            margin-bottom: 16px;
+        }
+        
+        .search-input {
+            flex: 1;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 16px;
+            outline: none;
+        }
+        
+        .search-cancel {
+            color: var(--accent);
+            font-size: 14px;
+            font-weight: 600;
+            margin-left: 12px;
+            cursor: pointer;
+        }
+        
+        .search-categories {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .search-categories::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .category {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            white-space: nowrap;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        
+        .category.active {
+            background-color: var(--accent);
+            color: var(--bg-primary);
+        }
+        
+        .search-results {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        
+        .search-result-item {
+            aspect-ratio: 9/16;
+            background-color: var(--bg-tertiary);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .search-result-item video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .search-result-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 8px;
+            background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+            font-size: 12px;
+        }
+        
+        /* Страница истории просмотров */
+        .history-page {
+            position: absolute;
+            top: 56px;
+            left: 0;
+            right: 0;
+            bottom: 60px;
+            background-color: var(--bg-primary);
+            padding: 16px;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .history-page.active {
+            display: block;
+        }
+        
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .history-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background-color: var(--bg-tertiary);
+            border-radius: 10px;
+        }
+        
+        .history-thumbnail {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            background-color: var(--bg-secondary);
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        
+        .history-info {
+            flex: 1;
+        }
+        
+        .history-creator {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .history-time {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        
+        /* Страница профиля */
+        .profile-page {
+            position: absolute;
+            top: 56px;
+            left: 0;
+            right: 0;
+            bottom: 60px;
+            background-color: var(--bg-primary);
+            padding: 16px;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .profile-page.active {
+            display: block;
+        }
+        
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid var(--accent);
+            margin-right: 20px;
+            background-color: var(--bg-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+        
+        .profile-info {
+            flex: 1;
+        }
+        
+        .profile-name {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .profile-username {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+        
+        .profile-stats {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .stat-number {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .profile-bio {
+            background-color: var(--bg-secondary);
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .profile-actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .profile-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-size: 14px;
+        }
+        
+        .profile-edit {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        
+        .profile-share {
+            background-color: var(--accent);
+            color: var(--bg-primary);
+        }
+        
+        .profile-videos-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2px;
+        }
+        
+        .profile-video-item {
+            aspect-ratio: 9/16;
+            background-color: var(--bg-tertiary);
+            border-radius: 2px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* Страница создания видео */
+        .create-page {
+            position: absolute;
+            top: 56px;
+            left: 0;
+            right: 0;
+            bottom: 60px;
+            background-color: var(--bg-primary);
+            display: none;
+        }
+        
+        .create-page.active {
+            display: block;
+        }
+        
+        .camera-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        
+        .camera-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background-color: var(--bg-secondary);
+        }
+        
+        .camera-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+        }
+        
+        .camera-record-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background-color: transparent;
+            border: 4px solid var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin-bottom: 30px;
+        }
+        
+        .camera-record-inner {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background-color: var(--accent);
+        }
+        
+        .camera-record-btn.recording .camera-record-inner {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background-color: #ff3b30;
+        }
+        
+        .camera-side-controls {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+        
+        .camera-side-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .camera-top-controls {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 10;
+        }
+        
+        .camera-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .camera-timer {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 8px 16px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Модальные окна регистрации/входа */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal-content {
+            width: 100%;
+            max-width: 400px;
+            background-color: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 24px;
+            position: relative;
+            border: 1px solid var(--border-color);
+        }
+        
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 16px;
+            outline: none;
+        }
+        
+        .form-input:focus {
+            border-color: var(--accent);
+        }
+        
+        .form-submit {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--accent);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        
+        .modal-switch {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .modal-switch a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        /* Меню "Поделиться" */
+        .share-menu {
+            position: fixed;
+            bottom: -100%;
+            left: 0;
+            right: 0;
+            background-color: var(--bg-secondary);
+            border-radius: 20px 20px 0 0;
+            padding: 20px;
+            z-index: 1500;
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+            transition: bottom 0.4s var(--transition-timing);
+        }
+        
+        .share-menu.active {
+            bottom: 0;
+        }
+        
+        .share-menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .share-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .share-close {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        .share-options {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+        
+        .share-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 15px 5px;
+            border-radius: 10px;
+        }
+        
+        .share-option:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .share-option-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--bg-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        
+        .share-option-label {
+            font-size: 12px;
+            text-align: center;
+        }
+        
+        /* Модальное окно комментариев */
+        .comments-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--bg-primary);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(100%);
+            transition: transform 0.4s var(--transition-timing);
+        }
+        
+        .comments-modal.active {
+            transform: translateY(0);
+        }
+        
+        .comments-header {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .comments-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .comments-close {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        .comments-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        
+        .comment-item {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .comment-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--bg-tertiary);
+            flex-shrink: 0;
+        }
+        
+        .comment-content {
+            flex: 1;
+        }
+        
+        .comment-author {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .comment-text {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        
+        .comment-actions {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .comment-action {
+            cursor: pointer;
+        }
+        
+        .comment-input-container {
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 10px;
+        }
+        
+        .comment-input {
+            flex: 1;
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 12px 20px;
+            color: var(--text-primary);
+            font-size: 16px;
+            outline: none;
+        }
+        
+        .comment-send {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--accent);
+            color: var(--bg-primary);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        /* Темный оверлей для модальных окон */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1400;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Адаптивные стили */
+        @media (max-width: 320px) {
+            .video-caption {
+                font-size: 14px;
+            }
+            
+            .creator-name {
+                font-size: 14px;
+            }
+            
+            .creator-tagline {
+                font-size: 12px;
+            }
+            
+            .action-icon {
+                width: 44px;
+                height: 44px;
+                font-size: 18px;
+            }
+            
+            .share-options {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        @media (min-width: 768px) {
+            .app-container {
+                max-width: 450px;
+                margin: 0 auto;
+                border-left: 1px solid var(--border-color);
+                border-right: 1px solid var(--border-color);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container" id="appContainer">
+        <!-- Верхняя навигация -->
+        <nav class="navbar">
+            <div class="logo">TalkTok</div>
+            <div class="nav-right">
+                <div class="nav-icon" id="searchIcon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="nav-icon" id="inboxIcon">
+                    <i class="fas fa-inbox"></i>
+                    <span class="notification-badge">3</span>
+                </div>
+            </div>
+        </nav>
+        
+        <!-- Главная страница - лента видео -->
+        <div class="video-feed" id="videoFeed">
+            <!-- Видео будут добавлены динамически -->
+        </div>
+        
+        <!-- Страница поиска -->
+        <div class="search-page" id="searchPage">
+            <div class="search-header">
+                <div class="search-input-container">
+                    <input type="text" class="search-input" id="searchInput" placeholder="Поиск видео, людей, хэштегов...">
+                    <div class="search-cancel" id="cancelSearch">Отмена</div>
+                </div>
+                
+                <div class="search-categories">
+                    <div class="category active" data-category="for-you">Для вас</div>
+                    <div class="category" data-category="trending">Тренды</div>
+                    <div class="category" data-category="music">Музыка</div>
+                    <div class="category" data-category="comedy">Юмор</div>
+                    <div class="category" data-category="sports">Спорт</div>
+                    <div class="category" data-category="education">Образование</div>
+                    <div class="category" data-category="gaming">Игры</div>
+                </div>
+            </div>
+            
+            <div class="search-results" id="searchResults">
+                <!-- Результаты поиска будут добавлены динамически -->
+            </div>
+        </div>
+        
+        <!-- Страница истории -->
+        <div class="history-page" id="historyPage">
+            <h2 style="margin-bottom: 20px;">История просмотров</h2>
+            <div class="history-list" id="historyList">
+                <!-- История будет добавлена динамически -->
+            </div>
+        </div>
+        
+        <!-- Страница профиля -->
+        <div class="profile-page" id="profilePage">
+            <div class="profile-header">
+                <div class="profile-avatar" id="profileAvatar">
+                    <!-- Аватар будет установлен динамически -->
+                </div>
+                <div class="profile-info">
+                    <div class="profile-name" id="profileName">Гость</div>
+                    <div class="profile-username" id="profileUsername">@guest</div>
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <div class="stat-number" id="followingCount">0</div>
+                            <div class="stat-label">Подписки</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="followerCount">0</div>
+                            <div class="stat-label">Подписчики</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="likesCount">0</div>
+                            <div class="stat-label">Лайки</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="profile-bio" id="profileBio">
+                Расскажите о себе... (нажмите, чтобы изменить)
+            </div>
+            
+            <div class="profile-actions">
+                <button class="profile-btn profile-edit" id="editProfile">Редактировать</button>
+                <button class="profile-btn profile-share" id="shareProfile">Поделиться</button>
+            </div>
+            
+            <div class="profile-videos-grid" id="profileVideos">
+                <!-- Видео пользователя будут добавлены динамически -->
+            </div>
+        </div>
+        
+        <!-- Страница создания видео -->
+        <div class="create-page" id="createPage">
+            <div class="camera-container">
+                <div class="camera-top-controls">
+                    <div class="camera-close" id="closeCamera">
+                        <i class="fas fa-times"></i>
+                    </div>
+                    <div class="camera-timer" id="cameraTimer">00:00</div>
+                </div>
+                
+                <div class="camera-side-controls">
+                    <div class="camera-side-btn" id="flipCamera">
+                        <i class="fas fa-camera-rotate"></i>
+                    </div>
+                    <div class="camera-side-btn" id="toggleFlash">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <div class="camera-side-btn" id="cameraEffects">
+                        <i class="fas fa-wand-magic-sparkles"></i>
+                    </div>
+                    <div class="camera-side-btn" id="cameraTimerBtn">
+                        <i class="fas fa-hourglass-half"></i>
+                    </div>
+                </div>
+                
+                <div class="camera-controls">
+                    <div class="camera-record-btn" id="recordButton">
+                        <div class="camera-record-inner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Нижняя навигация -->
+        <nav class="bottom-nav">
+            <div class="nav-button active" id="homeButton">
+                <div class="nav-icon-large">
+                    <i class="fas fa-home"></i>
+                </div>
+                <div class="nav-label">Главная</div>
+            </div>
+            <div class="nav-button" id="discoverButton">
+                <div class="nav-icon-large">
+                    <i class="fas fa-compass"></i>
+                </div>
+                <div class="nav-label">Поиск</div>
+            </div>
+            <div class="create-button" id="createButton">
+                <i class="fas fa-plus"></i>
+            </div>
+            <div class="nav-button" id="historyButton">
+                <div class="nav-icon-large">
+                    <i class="fas fa-history"></i>
+                </div>
+                <div class="nav-label">История</div>
+            </div>
+            <div class="nav-button" id="profileButton">
+                <div class="nav-icon-large">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="nav-label">Профиль</div>
+            </div>
+        </nav>
+        
+        <!-- Меню "Поделиться" -->
+        <div class="share-menu" id="shareMenu">
+            <div class="share-menu-header">
+                <div class="share-title">Поделиться видео</div>
+                <button class="share-close" id="closeShareMenu">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="share-options">
+                <div class="share-option" id="shareRepost">
+                    <div class="share-option-icon">
+                        <i class="fas fa-retweet"></i>
+                    </div>
+                    <div class="share-option-label">Репост</div>
+                </div>
+                <div class="share-option" id="shareCopyLink">
+                    <div class="share-option-icon">
+                        <i class="fas fa-link"></i>
+                    </div>
+                    <div class="share-option-label">Ссылка</div>
+                </div>
+                <div class="share-option" id="shareSave">
+                    <div class="share-option-icon">
+                        <i class="fas fa-download"></i>
+                    </div>
+                    <div class="share-option-label">Сохранить</div>
+                </div>
+                <div class="share-option" id="shareQR">
+                    <div class="share-option-icon">
+                        <i class="fas fa-qrcode"></i>
+                    </div>
+                    <div class="share-option-label">QR-код</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Модальное окно комментариев -->
+        <div class="comments-modal" id="commentsModal">
+            <div class="comments-header">
+                <div class="comments-title">Комментарии</div>
+                <button class="comments-close" id="closeComments">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="comments-list" id="commentsList">
+                <!-- Комментарии будут добавляться динамически -->
+            </div>
+            <div class="comment-input-container">
+                <input type="text" class="comment-input" id="commentInput" placeholder="Добавьте комментарий...">
+                <button class="comment-send" id="sendComment">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Темный оверлей для модальных окон -->
+        <div class="modal-overlay" id="modalOverlay"></div>
+        
+        <!-- Модальное окно регистрации -->
+        <div class="modal" id="registerModal">
+            <div class="modal-content">
+                <button class="modal-close" id="closeRegisterModal">&times;</button>
+                <div class="modal-title">Регистрация</div>
+                
+                <div class="form-group">
+                    <input type="text" class="form-input" id="registerName" placeholder="Имя пользователя">
+                </div>
+                <div class="form-group">
+                    <input type="email" class="form-input" id="registerEmail" placeholder="Email">
+                </div>
+                <div class="form-group">
+                    <input type="password" class="form-input" id="registerPassword" placeholder="Пароль">
+                </div>
+                <div class="form-group">
+                    <input type="password" class="form-input" id="registerConfirmPassword" placeholder="Подтвердите пароль">
+                </div>
+                
+                <button class="form-submit" id="registerSubmit">Зарегистрироваться</button>
+                
+                <div class="modal-switch">
+                    Уже есть аккаунт? <a id="switchToLogin">Войти</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Модальное окно входа -->
+        <div class="modal" id="loginModal">
+            <div class="modal-content">
+                <button class="modal-close" id="closeLoginModal">&times;</button>
+                <div class="modal-title">Вход в аккаунт</div>
+                
+                <div class="form-group">
+                    <input type="text" class="form-input" id="loginUsername" placeholder="Имя пользователя или Email">
+                </div>
+                <div class="form-group">
+                    <input type="password" class="form-input" id="loginPassword" placeholder="Пароль">
+                </div>
+                
+                <button class="form-submit" id="loginSubmit">Войти</button>
+                
+                <div class="modal-switch">
+                    Нет аккаунта? <a id="switchToRegister">Зарегистрироваться</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Основные переменные
+        let currentUser = null;
+        let currentPage = 'home';
+        let videoPlayers = {};
+        let currentVideoId = null;
+        
+        // Данные для демонстрации
+        const demoVideos = [
+            {
+                id: 1,
+                creator: {
+                    name: "Анна Путешественница",
+                    username: "@anna_travel",
+                    avatar: "https://randomuser.me/api/portraits/women/44.jpg"
+                },
+                description: "Утро на Бали начинается с чашечки кофе и вида на океан 🌊☕️ #путешествия #бали #утро",
+                hashtags: ["#путешествия", "#бали", "#утро", "#океан"],
+                likes: 12450,
+                comments: 230,
+                shares: 45,
+                bookmarks: 120,
+                videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-palm-tree-on-a-beach-1092-large.mp4",
+                duration: 15,
+                commentsList: [
+                    { id: 1, author: "@travel_lover", text: "Обожаю Бали! 😍", likes: 24, time: "2 часа назад" },
+                    { id: 2, author: "@beach_vibes", text: "Какое красивое место! Хочу туда!", likes: 12, time: "5 часов назад" }
+                ]
+            },
+            {
+                id: 2,
+                creator: {
+                    name: "Техно Гуру",
+                    username: "@tech_guru",
+                    avatar: "https://randomuser.me/api/portraits/men/32.jpg"
+                },
+                description: "Новый смартфон просто взорвал мой мозг! Что думаете? #технологии #гаджеты #обзор",
+                hashtags: ["#технологии", "#гаджеты", "#обзор"],
+                likes: 0,
+                comments: 0,
+                shares: 0,
+                bookmarks: 0,
+                videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-girl-in-neon-sign-1232-large.mp4",
+                duration: 20,
+                commentsList: []
+            },
+            {
+                id: 3,
+                creator: {
+                    name: "Танцор Дима",
+                    username: "@dima_dance",
+                    avatar: "https://randomuser.me/api/portraits/men/67.jpg"
+                },
+                description: "Новый танец на trending audio! Повтори? #танцы #тренд #челлендж",
+                hashtags: ["#танцы", "#тренд", "#челлендж"],
+                likes: 8950,
+                comments: 125,
+                shares: 30,
+                bookmarks: 65,
+                videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-man-dancing-under-changing-lights-1240-large.mp4",
+                duration: 18,
+                commentsList: [
+                    { id: 1, author: "@dance_queen", text: "Отличные движения! 🔥", likes: 42, time: "3 часа назад" }
+                ]
+            }
+        ];
+        
+        const searchVideos = [
+            {
+                id: 4,
+                creator: { name: "Кулинарный блог", username: "@cooking_blog" },
+                description: "Простой рецепт идеального чизкейка",
+                likes: 5430,
+                videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-close-up-of-coffee-beans-1722-large.mp4"
+            },
+            {
+                id: 5,
+                creator: { name: "Фитнес тренер", username: "@fitness_trainer" },
+                description: "Упражнения для пресса за 10 минут",
+                likes: 3210,
+                videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-waves-in-the-water-1164-large.mp4"
+            },
+            {
+                id: 6,
+                creator: { name: "Геймер", username: "@pro_gamer" },
+                description: "Новый геймплей Call of Duty",
+                likes: 7890,
+                videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-man-holding-neon-light-1230-large.mp4"
+            },
+            {
+                id: 7,
+                creator: { name: "Мотивация", username: "@motivation" },
+                description: "Утренняя рутина успешных людей",
+                likes: 4560,
+                videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-teen-girl-texting-on-her-phone-1245-large.mp4"
+            }
+        ];
+        
+        // Инициализация приложения
+        function initApp() {
+            loadUser();
+            loadVideos();
+            loadSearchResults();
+            loadHistory();
+            setupNavigation();
+            setupModals();
+            setupCamera();
+            setupEventListeners();
+            
+            // Показываем окно регистрации при первом посещении
+            if (!currentUser || currentUser.id === 'guest') {
+                setTimeout(() => {
+                    showModal('registerModal');
+                }, 1000);
+            }
+        }
+        
+        // Загрузка пользователя
+        function loadUser() {
+            const savedUser = localStorage.getItem('talktok_user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                updateProfileDisplay();
+            } else {
+                currentUser = {
+                    id: 'guest',
+                    name: 'Гость',
+                    username: '@guest',
+                    email: '',
+                    following: 0,
+                    followers: 0,
+                    likes: 0,
+                    videos: 0,
+                    bio: 'Расскажите о себе... (нажмите, чтобы изменить)',
+                    avatar: null
+                };
+            }
+        }
+        
+        // Сохранение пользователя
+        function saveUser() {
+            localStorage.setItem('talktok_user', JSON.stringify(currentUser));
+        }
+        
+        // Обновление отображения профиля
+        function updateProfileDisplay() {
+            document.getElementById('profileName').textContent = currentUser.name;
+            document.getElementById('profileUsername').textContent = currentUser.username;
+            document.getElementById('followingCount').textContent = currentUser.following;
+            document.getElementById('followerCount').textContent = currentUser.followers;
+            document.getElementById('likesCount').textContent = currentUser.likes;
+            document.getElementById('profileBio').textContent = currentUser.bio;
+            
+            const avatarElement = document.getElementById('profileAvatar');
+            if (currentUser.avatar) {
+                avatarElement.style.backgroundImage = `url(${currentUser.avatar})`;
+                avatarElement.style.backgroundSize = 'cover';
+                avatarElement.style.backgroundPosition = 'center';
+                avatarElement.innerHTML = '';
+            } else {
+                avatarElement.style.backgroundImage = '';
+                avatarElement.innerHTML = '<i class="fas fa-user"></i>';
+            }
+            
+            updateProfileVideos();
+        }
+        
+        // Обновление видео в профиле
+        function updateProfileVideos() {
+            const videosGrid = document.getElementById('profileVideos');
+            videosGrid.innerHTML = '';
+            
+            if (currentUser.videos === 0) {
+                for (let i = 0; i < 6; i++) {
+                    const videoItem = document.createElement('div');
+                    videoItem.className = 'profile-video-item';
+                    videoItem.style.display = 'flex';
+                    videoItem.style.alignItems = 'center';
+                    videoItem.style.justifyContent = 'center';
+                    videoItem.style.color = 'var(--text-secondary)';
+                    videoItem.innerHTML = '<i class="fas fa-plus"></i>';
+                    videosGrid.appendChild(videoItem);
+                }
+            } else {
+                for (let i = 0; i < Math.min(currentUser.videos, 6); i++) {
+                    const videoItem = document.createElement('div');
+                    videoItem.className = 'profile-video-item';
+                    videoItem.style.backgroundColor = `hsl(${i * 60}, 30%, 20%)`;
+                    videosGrid.appendChild(videoItem);
+                }
+                
+                for (let i = currentUser.videos; i < 6; i++) {
+                    const videoItem = document.createElement('div');
+                    videoItem.className = 'profile-video-item';
+                    videoItem.style.display = 'flex';
+                    videoItem.style.alignItems = 'center';
+                    videoItem.style.justifyContent = 'center';
+                    videoItem.style.color = 'var(--text-secondary)';
+                    videoItem.innerHTML = '<i class="fas fa-plus"></i>';
+                    videosGrid.appendChild(videoItem);
+                }
+            }
+        }
+        
+        // Загрузка видео в ленту
+        function loadVideos() {
+            const videoFeed = document.getElementById('videoFeed');
+            videoFeed.innerHTML = '';
+            
+            demoVideos.forEach(video => {
+                const videoItem = createVideoElement(video);
+                videoFeed.appendChild(videoItem);
+            });
+            
+            setTimeout(initVideos, 100);
+        }
+        
+        // Создание элемента видео
+        function createVideoElement(videoData) {
+            const videoItem = document.createElement('div');
+            videoItem.className = 'video-item';
+            videoItem.dataset.videoId = videoData.id;
+            
+            videoItem.innerHTML = `
+                <video class="video-player" loop playsinline preload="metadata">
+                    <source src="${videoData.videoUrl}" type="video/mp4">
+                </video>
+                <div class="video-overlay">
+                    <div class="video-info">
+                        <div class="creator-info">
+                            <img class="creator-avatar" src="${videoData.creator.avatar}" alt="${videoData.creator.name}">
+                            <div class="creator-details">
+                                <div class="creator-name">${videoData.creator.name}</div>
+                                <div class="creator-tagline">${videoData.creator.username}</div>
+                            </div>
+                            <button class="follow-btn" data-creator="${videoData.creator.username}">Подписаться</button>
+                        </div>
+                        <div class="video-caption">${videoData.description}</div>
+                        <div class="hashtags">
+                            ${videoData.hashtags.map(tag => `<span class="hashtag">${tag}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div class="video-actions">
+                        <div class="action-button like-button" data-video-id="${videoData.id}">
+                            <div class="action-icon">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                            <div class="action-count">${formatNumber(videoData.likes)}</div>
+                        </div>
+                        <div class="action-button comment-button" data-video-id="${videoData.id}">
+                            <div class="action-icon">
+                                <i class="fas fa-comment"></i>
+                            </div>
+                            <div class="action-count">${formatNumber(videoData.comments)}</div>
+                        </div>
+                        <div class="action-button share-button" data-video-id="${videoData.id}">
+                            <div class="action-icon">
+                                <i class="fas fa-share"></i>
+                            </div>
+                            <div class="action-count">${formatNumber(videoData.shares)}</div>
+                        </div>
+                        <div class="action-button bookmark-button" data-video-id="${videoData.id}">
+                            <div class="action-icon">
+                                <i class="fas fa-bookmark"></i>
+                            </div>
+                            <div class="action-count">${videoData.bookmarks > 0 ? formatNumber(videoData.bookmarks) : 'Сохранить'}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            return videoItem;
+        }
+        
+        // Инициализация видео
+        function initVideos() {
+            const videoElements = document.querySelectorAll('.video-player');
+            
+            videoElements.forEach((video) => {
+                const videoId = video.closest('.video-item').dataset.videoId;
+                videoPlayers[videoId] = video;
+                
+                // Автовоспроизведение при появлении в зоне видимости
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            video.play().catch(e => console.log('Автовоспроизведение заблокировано'));
+                        } else {
+                            video.pause();
+                            video.currentTime = 0;
+                        }
+                    });
+                }, { threshold: 0.5 });
+                
+                observer.observe(video.closest('.video-item'));
+            });
+            
+            // Инициализация двойного тапа для лайка
+            initDoubleTap();
+        }
+        
+        // Инициализация двойного тапа
+        function initDoubleTap() {
+            const videoItems = document.querySelectorAll('.video-item');
+            
+            videoItems.forEach(item => {
+                let lastTap = 0;
+                
+                item.addEventListener('click', function(e) {
+                    const currentTime = new Date().getTime();
+                    const tapLength = currentTime - lastTap;
+                    
+                    if (tapLength < 500 && tapLength > 0) {
+                        // Двойной тап - ставим лайк
+                        const heart = document.createElement('div');
+                        heart.className = 'heart-animation';
+                        heart.innerHTML = '<i class="fas fa-heart"></i>';
+                        heart.style.position = 'absolute';
+                        heart.style.left = e.clientX + 'px';
+                        heart.style.top = e.clientY + 'px';
+                        heart.style.fontSize = '80px';
+                        heart.style.color = 'rgba(255, 255, 255, 0.9)';
+                        heart.style.pointerEvents = 'none';
+                        heart.style.zIndex = '5';
+                        heart.style.animation = 'heartPop 1s ease-out forwards';
+                        
+                        this.appendChild(heart);
+                        
+                        setTimeout(() => {
+                            heart.remove();
+                        }, 1000);
+                        
+                        const likeButton = this.querySelector('.like-button');
+                        if (likeButton) {
+                            handleLike(likeButton);
+                        }
+                        
+                        lastTap = 0;
+                    } else {
+                        lastTap = currentTime;
+                    }
+                });
+            });
+        }
+        
+        // Анимация сердечка
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes heartPop {
+                0% { opacity: 0; transform: scale(0.3); }
+                20% { opacity: 1; transform: scale(1.1); }
+                40% { transform: scale(1); }
+                60% { transform: scale(1.05); }
+                100% { opacity: 0; transform: scale(1.3); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Форматирование чисел
+        function formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            }
+            return num.toString();
+        }
+        
+        // Загрузка результатов поиска
+        function loadSearchResults() {
+            const searchResults = document.getElementById('searchResults');
+            searchResults.innerHTML = '';
+            
+            searchVideos.forEach(video => {
+                const resultItem = document.createElement('div');
+                resultItem.className = 'search-result-item';
+                resultItem.innerHTML = `
+                    <video loop playsinline muted>
+                        <source src="${video.videoUrl}" type="video/mp4">
+                    </video>
+                    <div class="search-result-info">
+                        <div>${video.creator.name}</div>
+                        <div>${formatNumber(video.likes)} лайков</div>
+                    </div>
+                `;
+                searchResults.appendChild(resultItem);
+            });
+        }
+        
+        // Загрузка истории
+        function loadHistory() {
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+            
+            if (demoVideos.length === 0) {
+                historyList.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 40px 0;">История просмотров пуста</div>';
+                return;
+            }
+            
+            demoVideos.forEach((video, index) => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.innerHTML = `
+                    <div class="history-thumbnail" style="background-image: url(${video.creator.avatar}); background-size: cover;"></div>
+                    <div class="history-info">
+                        <div class="history-creator">${video.creator.name}</div>
+                        <div class="history-time">${index === 0 ? '2 часа назад' : index === 1 ? '5 часов назад' : 'Вчера'}</div>
+                    </div>
+                `;
+                historyList.appendChild(historyItem);
+            });
+        }
+        
+        // Настройка навигации
+        function setupNavigation() {
+            const navButtons = {
+                homeButton: 'home',
+                discoverButton: 'searchPage',
+                historyButton: 'historyPage',
+                profileButton: 'profilePage'
+            };
+            
+            Object.keys(navButtons).forEach(buttonId => {
+                document.getElementById(buttonId).addEventListener('click', function() {
+                    if (buttonId === 'profileButton' && (!currentUser || currentUser.id === 'guest')) {
+                        showModal('loginModal');
+                        return;
+                    }
+                    
+                    document.querySelectorAll('.nav-button').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    
+                    this.classList.add('active');
+                    
+                    switchPage(navButtons[buttonId]);
+                });
+            });
+            
+            document.getElementById('createButton').addEventListener('click', function() {
+                if (!currentUser || currentUser.id === 'guest') {
+                    showModal('loginModal');
+                    return;
+                }
+                
+                switchPage('createPage');
+            });
+            
+            document.getElementById('searchIcon').addEventListener('click', function() {
+                document.querySelectorAll('.nav-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.getElementById('discoverButton').classList.add('active');
+                switchPage('searchPage');
+            });
+        }
+        
+        // Переключение страницы
+        function switchPage(pageName) {
+            // Скрываем все страницы
+            document.getElementById('videoFeed').style.display = 'none';
+            document.getElementById('searchPage').classList.remove('active');
+            document.getElementById('historyPage').classList.remove('active');
+            document.getElementById('profilePage').classList.remove('active');
+            document.getElementById('createPage').classList.remove('active');
+            
+            // Останавливаем все видео
+            Object.values(videoPlayers).forEach(video => {
+                if (video) {
+                    video.pause();
+                    video.currentTime = 0;
+                }
+            });
+            
+            // Показываем выбранную страницу
+            if (pageName === 'home') {
+                document.getElementById('videoFeed').style.display = 'block';
+                setTimeout(() => {
+                    const visibleVideo = document.querySelector('.video-item:first-child video');
+                    if (visibleVideo) {
+                        visibleVideo.play().catch(e => console.log('Автовоспроизведение заблокировано'));
+                    }
+                }, 100);
+            } else {
+                document.getElementById(pageName).classList.add('active');
+            }
+            
+            currentPage = pageName;
+        }
+        
+        // Настройка модальных окон
+        function setupModals() {
+            // Переключение между окнами входа и регистрации
+            document.getElementById('switchToLogin').addEventListener('click', function() {
+                hideAllModals();
+                showModal('loginModal');
+            });
+            
+            document.getElementById('switchToRegister').addEventListener('click', function() {
+                hideAllModals();
+                showModal('registerModal');
+            });
+            
+            // Закрытие модальных окон
+            document.getElementById('closeRegisterModal').addEventListener('click', hideAllModals);
+            document.getElementById('closeLoginModal').addEventListener('click', hideAllModals);
+            
+            // Клик вне модального окна для закрытия
+            document.getElementById('modalOverlay').addEventListener('click', hideAllModals);
+            
+            // Регистрация
+            document.getElementById('registerSubmit').addEventListener('click', function() {
+                const name = document.getElementById('registerName').value.trim();
+                const email = document.getElementById('registerEmail').value.trim();
+                const password = document.getElementById('registerPassword').value.trim();
+                const confirmPassword = document.getElementById('registerConfirmPassword').value.trim();
+                
+                if (!name || !email || !password || !confirmPassword) {
+                    alert('Пожалуйста, заполните все поля');
+                    return;
+                }
+                
+                if (password !== confirmPassword) {
+                    alert('Пароли не совпадают');
+                    return;
+                }
+                
+                if (password.length < 6) {
+                    alert('Пароль должен содержать минимум 6 символов');
+                    return;
+                }
+                
+                // Создаем нового пользователя
+                currentUser = {
+                    id: 'user_' + Date.now(),
+                    name: name,
+                    username: '@' + name.toLowerCase().replace(/\s/g, '_'),
+                    email: email,
+                    following: 0,
+                    followers: 0,
+                    likes: 0,
+                    videos: 0,
+                    bio: 'Расскажите о себе... (нажмите, чтобы изменить)',
+                    avatar: null
+                };
+                
+                saveUser();
+                updateProfileDisplay();
+                hideAllModals();
+                
+                alert(`Добро пожаловать, ${name}! Регистрация прошла успешно.`);
+            });
+            
+            // Вход
+            document.getElementById('loginSubmit').addEventListener('click', function() {
+                const username = document.getElementById('loginUsername').value.trim();
+                const password = document.getElementById('loginPassword').value.trim();
+                
+                if (!username || !password) {
+                    alert('Пожалуйста, заполните все поля');
+                    return;
+                }
+                
+                // Для демо просто создаем пользователя
+                currentUser = {
+                    id: 'user_' + Date.now(),
+                    name: username,
+                    username: '@' + username.toLowerCase().replace(/\s/g, '_'),
+                    email: username.includes('@') ? username : '',
+                    following: Math.floor(Math.random() * 50),
+                    followers: Math.floor(Math.random() * 100),
+                    likes: Math.floor(Math.random() * 500),
+                    videos: Math.floor(Math.random() * 10),
+                    bio: 'Привет! Я новый пользователь TalkTok',
+                    avatar: null
+                };
+                
+                saveUser();
+                updateProfileDisplay();
+                hideAllModals();
+                
+                alert(`С возвращением, ${username}!`);
+            });
+        }
+        
+        // Показать модальное окно
+        function showModal(modalId) {
+            hideAllModals();
+            document.getElementById(modalId).classList.add('active');
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+        
+        // Скрыть все модальные окна
+        function hideAllModals() {
+            document.getElementById('registerModal').classList.remove('active');
+            document.getElementById('loginModal').classList.remove('active');
+            document.getElementById('modalOverlay').classList.remove('active');
+            document.getElementById('shareMenu').classList.remove('active');
+            document.getElementById('commentsModal').classList.remove('active');
+        }
+        
+        // Настройка камеры
+        function setupCamera() {
+            document.getElementById('closeCamera').addEventListener('click', function() {
+                switchPage('home');
+                stopRecording();
+            });
+            
+            document.getElementById('recordButton').addEventListener('click', function() {
+                if (this.classList.contains('recording')) {
+                    stopRecording();
+                } else {
+                    startRecording();
+                }
+            });
+        }
+        
+        // Начало записи
+        function startRecording() {
+            const recordBtn = document.getElementById('recordButton');
+            recordBtn.classList.add('recording');
+            
+            let seconds = 0;
+            const timerElement = document.getElementById('cameraTimer');
+            const timer = setInterval(() => {
+                seconds++;
+                const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+                const secs = (seconds % 60).toString().padStart(2, '0');
+                timerElement.textContent = `${mins}:${secs}`;
+                
+                // Сохраняем timer в data атрибут для остановки
+                recordBtn.dataset.timer = timer;
+            }, 1000);
+        }
+        
+        // Остановка записи
+        function stopRecording() {
+            const recordBtn = document.getElementById('recordButton');
+            recordBtn.classList.remove('recording');
+            
+            const timer = recordBtn.dataset.timer;
+            if (timer) {
+                clearInterval(parseInt(timer));
+                delete recordBtn.dataset.timer;
+            }
+            
+            document.getElementById('cameraTimer').textContent = '00:00';
+            
+            setTimeout(() => {
+                if (confirm('Видео записано! Хотите опубликовать?')) {
+                    currentUser.videos++;
+                    currentUser.likes += Math.floor(Math.random() * 100);
+                    saveUser();
+                    updateProfileDisplay();
+                    
+                    alert('Видео опубликовано!');
+                    switchPage('home');
+                } else {
+                    alert('Видео сохранено в черновиках');
+                    switchPage('home');
+                }
+            }, 500);
+        }
+        
+        // Настройка обработчиков событий
+        function setupEventListeners() {
+            // Обработка кликов на элементы
+            document.addEventListener('click', function(e) {
+                // Лайк
+                if (e.target.closest('.like-button')) {
+                    const likeButton = e.target.closest('.like-button');
+                    handleLike(likeButton);
+                }
+                
+                // Комментарии
+                if (e.target.closest('.comment-button')) {
+                    const commentButton = e.target.closest('.comment-button');
+                    handleComment(commentButton);
+                }
+                
+                // Поделиться
+                if (e.target.closest('.share-button')) {
+                    const shareButton = e.target.closest('.share-button');
+                    handleShare(shareButton);
+                }
+                
+                // Сохранение
+                if (e.target.closest('.bookmark-button')) {
+                    const bookmarkButton = e.target.closest('.bookmark-button');
+                    handleBookmark(bookmarkButton);
+                }
+                
+                // Подписка
+                if (e.target.closest('.follow-btn')) {
+                    const followButton = e.target.closest('.follow-btn');
+                    handleFollow(followButton);
+                }
+                
+                // Развертывание описания
+                if (e.target.closest('.video-caption')) {
+                    const caption = e.target.closest('.video-caption');
+                    caption.style.maxHeight = caption.style.maxHeight ? '' : '200px';
+                }
+                
+                // Поиск по хэштегу
+                if (e.target.closest('.hashtag')) {
+                    const hashtag = e.target.closest('.hashtag');
+                    alert(`Поиск по хэштегу: ${hashtag.textContent}`);
+                }
+                
+                // Категории поиска
+                if (e.target.closest('.category')) {
+                    const categories = document.querySelectorAll('.category');
+                    categories.forEach(cat => cat.classList.remove('active'));
+                    e.target.closest('.category').classList.add('active');
+                }
+            });
+            
+            // Отмена поиска
+            document.getElementById('cancelSearch').addEventListener('click', function() {
+                switchPage('home');
+                document.querySelectorAll('.nav-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.getElementById('homeButton').classList.add('active');
+            });
+            
+            // Редактирование профиля
+            document.getElementById('editProfile').addEventListener('click', function() {
+                if (!currentUser || currentUser.id === 'guest') {
+                    showModal('loginModal');
+                    return;
+                }
+                
+                const newBio = prompt('Расскажите о себе:', currentUser.bio);
+                if (newBio !== null) {
+                    currentUser.bio = newBio;
+                    saveUser();
+                    updateProfileDisplay();
+                }
+            });
+            
+            // Поделиться профилем
+            document.getElementById('shareProfile').addEventListener('click', function() {
+                if (!currentUser || currentUser.id === 'guest') {
+                    showModal('loginModal');
+                    return;
+                }
+                
+                alert(`Ссылка на профиль: talktok://profile/${currentUser.username}`);
+            });
+            
+            // Редактирование био по клику
+            document.getElementById('profileBio').addEventListener('click', function() {
+                if (!currentUser || currentUser.id === 'guest') {
+                    showModal('loginModal');
+                    return;
+                }
+                
+                const newBio = prompt('Расскажите о себе:', currentUser.bio);
+                if (newBio !== null) {
+                    currentUser.bio = newBio;
+                    saveUser();
+                    updateProfileDisplay();
+                }
+            });
+            
+            // Настройка меню "Поделиться"
+            document.getElementById('closeShareMenu').addEventListener('click', hideAllModals);
+            
+            // Опции меню "Поделиться"
+            document.getElementById('shareCopyLink').addEventListener('click', function() {
+                navigator.clipboard.writeText('https://talktok.app/video/' + currentVideoId)
+                    .then(() => {
+                        alert('Ссылка скопирована в буфер обмена!');
+                        hideAllModals();
+                    })
+                    .catch(err => {
+                        alert('Не удалось скопировать ссылку');
+                    });
+            });
+            
+            document.getElementById('shareSave').addEventListener('click', function() {
+                alert('Видео сохранено в галерею!');
+                hideAllModals();
+            });
+            
+            // Настройка комментариев
+            document.getElementById('closeComments').addEventListener('click', hideAllModals);
+            document.getElementById('sendComment').addEventListener('click', sendComment);
+            document.getElementById('commentInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendComment();
+                }
+            });
+        }
+        
+        // Отправка комментария
+        function sendComment() {
+            const input = document.getElementById('commentInput');
+            const text = input.value.trim();
+            
+            if (!text) return;
+            
+            if (!currentUser || currentUser.id === 'guest') {
+                alert('Чтобы оставить комментарий, войдите в аккаунт');
+                return;
+            }
+            
+            const commentsList = document.getElementById('commentsList');
+            const commentItem = document.createElement('div');
+            commentItem.className = 'comment-item';
+            commentItem.innerHTML = `
+                <div class="comment-avatar"></div>
+                <div class="comment-content">
+                    <div class="comment-author">${currentUser.username}</div>
+                    <div class="comment-text">${text}</div>
+                    <div class="comment-actions">
+                        <span class="comment-action">Только что</span>
+                        <span class="comment-action">Ответить</span>
+                        <span class="comment-action"><i class="fas fa-heart"></i> 0</span>
+                    </div>
+                </div>
+            `;
+            
+            commentsList.insertBefore(commentItem, commentsList.firstChild);
+            input.value = '';
+            
+            // Обновляем счетчик комментариев
+            const commentButton = document.querySelector(`.comment-button[data-video-id="${currentVideoId}"]`);
+            if (commentButton) {
+                const countElement = commentButton.querySelector('.action-count');
+                let count = parseInt(countElement.textContent.replace(/[^0-9]/g, '') || 0);
+                count++;
+                countElement.textContent = formatNumber(count);
+            }
+        }
+        
+        // Обработка лайка
+        function handleLike(button) {
+            const videoId = button.dataset.videoId;
+            const icon = button.querySelector('.action-icon');
+            const countElement = button.querySelector('.action-count');
+            
+            if (icon.classList.contains('liked')) {
+                icon.classList.remove('liked');
+                countElement.classList.remove('liked');
+                
+                let count = parseInt(countElement.textContent.replace(/[^0-9]/g, '') || 0);
+                if (count > 0) count--;
+                countElement.textContent = count > 0 ? formatNumber(count) : '0';
+            } else {
+                icon.classList.add('liked');
+                countElement.classList.add('liked');
+                
+                let count = parseInt(countElement.textContent.replace(/[^0-9]/g, '') || 0);
+                count++;
+                countElement.textContent = formatNumber(count);
+                
+                // Анимация
+                icon.style.transform = 'scale(1.2)';
+                setTimeout(() => {
+                    icon.style.transform = 'scale(1)';
+                }, 200);
+                
+                // Увеличиваем счетчик лайков пользователя
+                if (currentUser && currentUser.id !== 'guest') {
+                    currentUser.likes++;
+                    saveUser();
+                    updateProfileDisplay();
+                }
+            }
+        }
+        
+        // Обработка комментария
+        function handleComment(button) {
+            const videoId = button.dataset.videoId;
+            currentVideoId = parseInt(videoId);
+            
+            // Находим видео
+            const video = demoVideos.find(v => v.id === currentVideoId);
+            if (!video) return;
+            
+            // Показываем модальное окно комментариев
+            document.getElementById('commentsModal').classList.add('active');
+            document.getElementById('modalOverlay').classList.add('active');
+            
+            // Загружаем комментарии
+            const commentsList = document.getElementById('commentsList');
+            commentsList.innerHTML = '';
+            
+            if (video.commentsList.length === 0) {
+                commentsList.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 40px 0;">Пока нет комментариев. Будьте первым!</div>';
+                return;
+            }
+            
+            video.commentsList.forEach(comment => {
+                const commentItem = document.createElement('div');
+                commentItem.className = 'comment-item';
+                commentItem.innerHTML = `
+                    <div class="comment-avatar"></div>
+                    <div class="comment-content">
+                        <div class="comment-author">${comment.author}</div>
+                        <div class="comment-text">${comment.text}</div>
+                        <div class="comment-actions">
+                            <span class="comment-action">${comment.time}</span>
+                            <span class="comment-action">Ответить</span>
+                            <span class="comment-action"><i class="fas fa-heart"></i> ${comment.likes}</span>
+                        </div>
+                    </div>
+                `;
+                commentsList.appendChild(commentItem);
+            });
+        }
+        
+        // Обработка шера
+        function handleShare(button) {
+            const videoId = button.dataset.videoId;
+            currentVideoId = parseInt(videoId);
+            
+            // Показываем меню "Поделиться"
+            document.getElementById('shareMenu').classList.add('active');
+            document.getElementById('modalOverlay').classList.add('active');
+            
+            // Увеличиваем счетчик репостов
+            const countElement = button.querySelector('.action-count');
+            let count = parseInt(countElement.textContent.replace(/[^0-9]/g, '') || 0);
+            count++;
+            countElement.textContent = formatNumber(count);
+        }
+        
+        // Обработка сохранения
+        function handleBookmark(button) {
+            const icon = button.querySelector('.action-icon i');
+            const countElement = button.querySelector('.action-count');
+            
+            if (icon.classList.contains('fas')) {
+                icon.className = 'far fa-bookmark';
+                countElement.textContent = 'Сохранить';
+            } else {
+                icon.className = 'fas fa-bookmark';
+                countElement.textContent = 'Сохранено';
+            }
+        }
+        
+        // Обработка подписки
+        function handleFollow(button) {
+            const creator = button.dataset.creator;
+            
+            if (button.textContent === 'Подписаться') {
+                button.textContent = 'Вы подписаны';
+                button.style.backgroundColor = '#333';
+                
+                if (currentUser && currentUser.id !== 'guest') {
+                    currentUser.following++;
+                    saveUser();
+                    updateProfileDisplay();
+                }
+            } else {
+                button.textContent = 'Подписаться';
+                button.style.backgroundColor = '';
+                
+                if (currentUser && currentUser.id !== 'guest') {
+                    currentUser.following = Math.max(0, currentUser.following - 1);
+                    saveUser();
+                    updateProfileDisplay();
+                }
+            }
+        }
+        
+        // Инициализация приложения
+        window.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
