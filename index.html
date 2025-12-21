@@ -1,0 +1,1811 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoVision | Історія та майбутнє криптовалют</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #3b82f6;
+            --secondary-blue: #2563eb;
+            --dark-blue: #1e40af;
+            --light-blue: #60a5fa;
+            --accent-blue: #0ea5e9;
+            --purple-blue: #6366f1;
+            --white: #ffffff;
+            --light-gray: #f8fafc;
+            --medium-gray: #e2e8f0;
+            --dark-gray: #1e293b;
+            --text-dark: #0f172a;
+            --text-light: #64748b;
+            --shadow-light: 0 4px 20px rgba(59, 130, 246, 0.08);
+            --shadow-medium: 0 10px 40px rgba(59, 130, 246, 0.15);
+            --shadow-dark: 0 20px 60px rgba(59, 130, 246, 0.2);
+            --gradient-primary: linear-gradient(135deg, var(--primary-blue), var(--purple-blue));
+            --gradient-secondary: linear-gradient(135deg, var(--accent-blue), var(--primary-blue));
+            --gradient-light: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(99, 102, 241, 0.1));
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background-color: var(--white);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header & Navigation */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background-color: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(15px);
+            box-shadow: var(--shadow-light);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            padding: 18px 0;
+        }
+
+        .header-scrolled {
+            padding: 12px 0;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .logo i {
+            margin-right: 12px;
+            color: var(--secondary-blue);
+            font-size: 2rem;
+        }
+
+        .logo span {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .desktop-nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        .desktop-nav ul li {
+            margin-left: 32px;
+        }
+
+        .desktop-nav ul li a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 8px 0;
+        }
+
+        .desktop-nav ul li a:hover {
+            color: var(--primary-blue);
+        }
+
+        .desktop-nav ul li a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: var(--gradient-primary);
+            transition: width 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .desktop-nav ul li a:hover::after {
+            width: 100%;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            color: var(--primary-blue);
+            cursor: pointer;
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+            background: var(--gradient-light);
+        }
+
+        .mobile-menu-btn:hover {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        /* Mobile Menu Overlay */
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .mobile-menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 320px;
+            height: 100%;
+            background: var(--white);
+            box-shadow: -10px 0 40px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: right 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            padding: 30px;
+        }
+
+        .mobile-menu.active {
+            right: 0;
+        }
+
+        .mobile-menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .mobile-menu-close {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            color: var(--text-dark);
+            cursor: pointer;
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--light-gray);
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu-close:hover {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .mobile-nav ul {
+            list-style: none;
+        }
+
+        .mobile-nav ul li {
+            margin-bottom: 20px;
+        }
+
+        .mobile-nav ul li a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 600;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-nav ul li a:hover {
+            background: var(--gradient-light);
+            color: var(--primary-blue);
+            transform: translateX(10px);
+        }
+
+        .mobile-nav ul li a i {
+            margin-right: 15px;
+            font-size: 1.3rem;
+            width: 25px;
+            text-align: center;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 180px 0 120px;
+            background: var(--gradient-light);
+            position: relative;
+            overflow: hidden;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -30%;
+            right: -10%;
+            width: 700px;
+            height: 700px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(255, 255, 255, 0) 70%);
+        }
+
+        .hero-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 60px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-text {
+            flex: 1;
+            max-width: 600px;
+            opacity: 0;
+            transform: translateY(40px);
+            animation: fadeUp 1s ease forwards;
+        }
+
+        .hero-image {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transform: translateX(40px);
+            animation: fadeRight 1s ease 0.5s forwards;
+        }
+
+        .hero-image img {
+            max-width: 100%;
+            border-radius: 24px;
+            box-shadow: var(--shadow-dark);
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 10px solid white;
+        }
+
+        .hero-image img:hover {
+            transform: translateY(-15px) scale(1.03);
+            box-shadow: 0 40px 60px rgba(59, 130, 246, 0.25);
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 25px;
+            color: var(--text-dark);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .hero h1 span {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            color: var(--text-light);
+            margin-bottom: 40px;
+            max-width: 550px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 18px 40px;
+            background: var(--gradient-primary);
+            color: var(--white);
+            border-radius: 14px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 15px 30px rgba(59, 130, 246, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.7s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(59, 130, 246, 0.35);
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn i {
+            margin-left: 12px;
+            font-size: 1.2rem;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary-blue);
+            color: var(--primary-blue);
+            box-shadow: none;
+            margin-left: 15px;
+        }
+
+        .btn-outline:hover {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        /* Sections */
+        section {
+            padding: 120px 0;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 80px;
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        .section-title h2 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            color: var(--text-dark);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .section-title p {
+            font-size: 1.2rem;
+            color: var(--text-light);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        /* Stats Section */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 30px;
+            margin-bottom: 80px;
+        }
+
+        .stat-card {
+            background-color: var(--white);
+            padding: 40px 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: var(--shadow-light);
+            transition: all 0.4s ease;
+            opacity: 0;
+            transform: translateY(40px);
+            border: 1px solid var(--medium-gray);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-medium);
+            border-color: var(--primary-blue);
+        }
+
+        .stat-card i {
+            font-size: 3rem;
+            margin-bottom: 25px;
+            color: var(--primary-blue);
+        }
+
+        .stat-card .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .stat-card .stat-label {
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+
+        /* History Section */
+        .history-section {
+            background: var(--light-gray);
+        }
+
+        .timeline {
+            position: relative;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--gradient-primary);
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+
+        .timeline-item {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 80px;
+            opacity: 0;
+            transform: translateY(40px);
+            position: relative;
+        }
+
+        .timeline-item:nth-child(odd) {
+            flex-direction: row;
+        }
+
+        .timeline-item:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .timeline-content {
+            width: 45%;
+            background: var(--white);
+            padding: 35px;
+            border-radius: 20px;
+            box-shadow: var(--shadow-light);
+            position: relative;
+            transition: all 0.4s ease;
+            border: 1px solid var(--medium-gray);
+        }
+
+        .timeline-content:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-medium);
+            border-color: var(--primary-blue);
+        }
+
+        .timeline-year {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--gradient-primary);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+            z-index: 2;
+        }
+
+        .timeline-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--text-dark);
+            font-weight: 700;
+        }
+
+        .timeline-content p {
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+
+        .timeline-image {
+            margin-top: 20px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .timeline-image img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .timeline-image img:hover {
+            transform: scale(1.05);
+        }
+
+        /* Cryptocurrencies Section */
+        .crypto-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 35px;
+        }
+
+        .crypto-card {
+            background-color: var(--white);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow-light);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0;
+            transform: translateY(40px);
+            border: 1px solid var(--medium-gray);
+        }
+
+        .crypto-card:hover {
+            transform: translateY(-15px);
+            box-shadow: var(--shadow-dark);
+            border-color: var(--primary-blue);
+        }
+
+        .crypto-header {
+            padding: 35px;
+            background: var(--gradient-primary);
+            color: var(--white);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .crypto-header::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: rotate(30deg);
+        }
+
+        .crypto-header h3 {
+            font-size: 1.6rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .crypto-header h3 i {
+            margin-right: 15px;
+            font-size: 1.8rem;
+        }
+
+        .crypto-symbol {
+            font-size: 1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .crypto-body {
+            padding: 35px;
+        }
+
+        .crypto-price {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .crypto-change {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 22px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .positive {
+            background-color: rgba(34, 197, 94, 0.15);
+            color: #16a34a;
+        }
+
+        .negative {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: #dc2626;
+        }
+
+        .crypto-info {
+            margin-bottom: 25px;
+        }
+
+        .crypto-info p {
+            margin-bottom: 12px;
+            color: var(--text-light);
+            display: flex;
+            justify-content: space-between;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+
+        .crypto-info span {
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        .crypto-description {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            line-height: 1.7;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--medium-gray);
+        }
+
+        /* Technology Section */
+        .tech-section {
+            background: var(--light-gray);
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 35px;
+        }
+
+        .tech-card {
+            background-color: var(--white);
+            padding: 45px 35px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: var(--shadow-light);
+            transition: all 0.4s ease;
+            opacity: 0;
+            transform: translateY(40px);
+            border: 1px solid var(--medium-gray);
+        }
+
+        .tech-card:hover {
+            transform: translateY(-15px);
+            box-shadow: var(--shadow-medium);
+            border-color: var(--primary-blue);
+        }
+
+        .tech-card i {
+            font-size: 3.5rem;
+            margin-bottom: 25px;
+            color: var(--primary-blue);
+        }
+
+        .tech-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--text-dark);
+            font-weight: 700;
+        }
+
+        .tech-card p {
+            color: var(--text-light);
+            margin-bottom: 25px;
+        }
+
+        .tech-link {
+            display: inline-flex;
+            align-items: center;
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .tech-link:hover {
+            color: var(--dark-blue);
+        }
+
+        .tech-link i {
+            font-size: 1rem;
+            margin-left: 8px;
+        }
+
+        /* External Link Section */
+        .external-section {
+            text-align: center;
+            padding: 100px 0;
+            background: var(--gradient-primary);
+            border-radius: 30px;
+            margin: 70px 0;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .external-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        }
+
+        .external-section h2 {
+            font-size: 2.8rem;
+            margin-bottom: 25px;
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            position: relative;
+            z-index: 1;
+        }
+
+        .external-section p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto 40px;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .external-link {
+            display: inline-flex;
+            align-items: center;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 20px 40px;
+            border-radius: 14px;
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 1;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .external-link:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-5px) scale(1.05);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .external-link i {
+            margin-left: 15px;
+            font-size: 1.4rem;
+            transition: transform 0.3s ease;
+        }
+
+        .external-link:hover i {
+            transform: translateX(10px);
+        }
+
+        .test-notice {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 35px;
+            border-radius: 20px;
+            margin-top: 50px;
+            text-align: center;
+            font-style: italic;
+            font-size: 1.1rem;
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 1;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--dark-gray);
+            color: var(--white);
+            padding: 100px 0 40px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 50px;
+            margin-bottom: 60px;
+        }
+
+        .footer-logo {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .footer-logo i {
+            margin-right: 15px;
+            color: var(--light-blue);
+            font-size: 2.2rem;
+        }
+
+        .footer-logo span {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .footer-about p {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 25px;
+            line-height: 1.8;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            background: var(--primary-blue);
+            transform: translateY(-5px);
+        }
+
+        .footer-links h4, .footer-contact h4 {
+            font-size: 1.3rem;
+            margin-bottom: 25px;
+            color: var(--white);
+            font-weight: 700;
+        }
+
+        .footer-links ul {
+            list-style: none;
+        }
+
+        .footer-links ul li {
+            margin-bottom: 15px;
+        }
+
+        .footer-links ul li a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .footer-links ul li a:hover {
+            color: var(--primary-blue);
+            transform: translateX(10px);
+        }
+
+        .footer-links ul li a i {
+            margin-right: 10px;
+            font-size: 0.9rem;
+        }
+
+        .footer-contact p {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .footer-contact p i {
+            margin-right: 15px;
+            color: var(--light-blue);
+            width: 20px;
+            font-size: 1.1rem;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 40px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.95rem;
+        }
+
+        /* Animations */
+        @keyframes fadeUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeRight {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .animated {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .animated.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .hero h1 {
+                font-size: 3rem;
+            }
+            
+            .section-title h2 {
+                font-size: 2.5rem;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .hero-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 60px;
+            }
+            
+            .hero-text {
+                margin-bottom: 0;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero p {
+                margin: 0 auto 40px;
+            }
+            
+            .timeline::before {
+                left: 30px;
+            }
+            
+            .timeline-item, .timeline-item:nth-child(even) {
+                flex-direction: row;
+                justify-content: flex-start;
+            }
+            
+            .timeline-content {
+                width: calc(100% - 80px);
+                margin-left: 80px;
+            }
+            
+            .timeline-year {
+                left: 0;
+                transform: translateX(-50%);
+            }
+            
+            .crypto-grid {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .desktop-nav {
+                display: none;
+            }
+            
+            .mobile-menu-btn {
+                display: flex;
+            }
+            
+            .hero {
+                padding: 160px 0 80px;
+                min-height: auto;
+            }
+            
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+            
+            .hero p {
+                font-size: 1.1rem;
+            }
+            
+            .btn {
+                padding: 16px 32px;
+                font-size: 1rem;
+            }
+            
+            section {
+                padding: 80px 0;
+            }
+            
+            .section-title {
+                margin-bottom: 50px;
+            }
+            
+            .section-title h2 {
+                font-size: 2.2rem;
+            }
+            
+            .section-title p {
+                font-size: 1.1rem;
+                padding: 0 10px;
+            }
+            
+            .timeline-content {
+                padding: 25px;
+                margin-left: 60px;
+                width: calc(100% - 60px);
+            }
+            
+            .timeline-year {
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
+            
+            .crypto-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .tech-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+            
+            .stat-card {
+                padding: 30px 20px;
+            }
+            
+            .stat-card .stat-value {
+                font-size: 2rem;
+            }
+            
+            .external-section {
+                padding: 70px 20px;
+                margin: 50px 0;
+                border-radius: 20px;
+            }
+            
+            .external-section h2 {
+                font-size: 2.2rem;
+            }
+            
+            .external-section p {
+                font-size: 1.1rem;
+            }
+            
+            .external-link {
+                font-size: 1.1rem;
+                padding: 18px 30px;
+            }
+            
+            .mobile-menu {
+                width: 280px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .hero h1 {
+                font-size: 1.9rem;
+            }
+            
+            .section-title h2 {
+                font-size: 1.9rem;
+            }
+            
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .external-section h2 {
+                font-size: 1.9rem;
+            }
+            
+            .test-notice {
+                padding: 25px;
+                font-size: 1rem;
+            }
+            
+            .container {
+                padding: 0 15px;
+            }
+        }
+
+        /* Crypto Chart Placeholder */
+        .crypto-chart {
+            height: 180px;
+            background: var(--gradient-light);
+            border-radius: 12px;
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--medium-gray);
+        }
+
+        .crypto-chart::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(59, 130, 246, 0.1) 50%, transparent 100%);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header id="header">
+        <div class="container header-container">
+            <a href="#" class="logo">
+                <i class="fas fa-chart-line"></i>
+                <span>CryptoVision</span>
+            </a>
+            
+            <nav class="desktop-nav">
+                <ul>
+                    <li><a href="#home">Головна</a></li>
+                    <li><a href="#stats">Статистика</a></li>
+                    <li><a href="#history">Історія</a></li>
+                    <li><a href="#cryptocurrencies">Криптовалюти</a></li>
+                    <li><a href="#technology">Технології</a></li>
+                    <li><a href="#external">Ресурси</a></li>
+                </ul>
+            </nav>
+            
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-header">
+            <div class="logo">
+                <i class="fas fa-chart-line"></i>
+                <span>CryptoVision</span>
+            </div>
+            <button class="mobile-menu-close" id="mobileMenuClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <nav class="mobile-nav">
+            <ul>
+                <li><a href="#home"><i class="fas fa-home"></i> Головна</a></li>
+                <li><a href="#stats"><i class="fas fa-chart-bar"></i> Статистика</a></li>
+                <li><a href="#history"><i class="fas fa-history"></i> Історія</a></li>
+                <li><a href="#cryptocurrencies"><i class="fas fa-coins"></i> Криптовалюти</a></li>
+                <li><a href="#technology"><i class="fas fa-microchip"></i> Технології</a></li>
+                <li><a href="#external"><i class="fas fa-external-link-alt"></i> Ресурси</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="container hero-content">
+            <div class="hero-text">
+                <h1>Відкрийте світ <span>криптовалют</span> разом з нами</h1>
+                <p>Дослідіть революційну технологію блокчейн, відкрийте для себе історію цифрових валют та дізнайтеся про майбутнє фінансів. Все, що вам потрібно знати про криптовалюти - в одному місці.</p>
+                <div class="hero-buttons">
+                    <a href="#history" class="btn">Дізнатися більше</a>
+                    <a href="#cryptocurrencies" class="btn btn-outline">Популярні криптовалюти</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <img src="https://images.unsplash.com/photo-1639762681485-074b7f938ba0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Блокчейн технології">
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section id="stats">
+        <div class="container">
+            <div class="section-title animated">
+                <h2>Світова статистика</h2>
+                <p>Актуальні дані про світ криптовалют на сьогодні</p>
+            </div>
+            
+            <div class="stats-container">
+                <div class="stat-card animated">
+                    <i class="fas fa-globe-americas"></i>
+                    <div class="stat-value">$1.4 трлн</div>
+                    <div class="stat-label">Загальна капіталізація</div>
+                </div>
+                <div class="stat-card animated">
+                    <i class="fas fa-coins"></i>
+                    <div class="stat-value">13,500+</div>
+                    <div class="stat-label">Криптовалют</div>
+                </div>
+                <div class="stat-card animated">
+                    <i class="fas fa-exchange-alt"></i>
+                    <div class="stat-value">600+</div>
+                    <div class="stat-label">Криптобірж</div>
+                </div>
+                <div class="stat-card animated">
+                    <i class="fas fa-users"></i>
+                    <div class="stat-value">420 млн</div>
+                    <div class="stat-label">Користувачів</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- History Section -->
+    <section id="history" class="history-section">
+        <div class="container">
+            <div class="section-title animated">
+                <h2>Історія криптовалют</h2>
+                <p>Ключові моменти розвитку цифрових валют від 2008 року до сьогодення</p>
+            </div>
+            
+            <div class="timeline">
+                <div class="timeline-item animated">
+                    <div class="timeline-year">2008</div>
+                    <div class="timeline-content">
+                        <h3>Народження Біткойна</h3>
+                        <p>31 жовтня 2008 року анонімний розробник під псевдонімом Сатоші Накамото опублікував white paper "Bitcoin: A Peer-to-Peer Electronic Cash System". Цей документ описав концепцію першої децентралізованої цифрової валюти.</p>
+                        <div class="timeline-image">
+                            <img src="https://images.unsplash.com/photo-1516245834210-8f0ecdfc62c1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Bitcoin Whitepaper">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="timeline-item animated">
+                    <div class="timeline-year">2010</div>
+                    <div class="timeline-content">
+                        <h3>Перша реальна покупка</h3>
+                        <p>22 травня 2010 року програміст Ласло Ханєць купив дві піци за 10 000 BTC, що еквівалентно приблизно $41 на той момент. Ця подія щороку відзначається як "День біткойн-піци".</p>
+                        <div class="timeline-image">
+                            <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Біткойн піца">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="timeline-item animated">
+                    <div class="timeline-year">2015</div>
+                    <div class="timeline-content">
+                        <h3>Запуск Ethereum</h3>
+                        <p>30 липня 2015 року Віталік Бутерін та його команда запустили Ethereum - платформу для створення децентралізованих додатків на основі смарт-контрактів, що відкрило нові можливості для блокчейн-технологій.</p>
+                        <div class="timeline-image">
+                            <img src="https://images.unsplash.com/photo-1620336655055-bd87c5d1d73f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Ethereum лого">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="timeline-item animated">
+                    <div class="timeline-year">2021</div>
+                    <div class="timeline-content">
+                        <h3>Мейнстрімне визнання</h3>
+                        <p>2021 рік став переломним для криптовалют. Великі компанії почали інвестувати в біткойн, NFT набули масової популярності, а Сальвадор став першою країною, що визнала біткойн законним платіжним засобом.</p>
+                        <div class="timeline-image">
+                            <img src="https://images.unsplash.com/photo-1642104704074-907c0698b8c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="NFT мистецтво">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cryptocurrencies Section -->
+    <section id="cryptocurrencies">
+        <div class="container">
+            <div class="section-title animated">
+                <h2>Популярні криптовалюти</h2>
+                <p>Топ-6 найбільш капіталізованих цифрових активів на ринку</p>
+            </div>
+            
+            <div class="crypto-grid">
+                <div class="crypto-card animated">
+                    <div class="crypto-header">
+                        <h3><i class="fab fa-bitcoin"></i> Bitcoin</h3>
+                        <div class="crypto-symbol">BTC - Цифрове золото</div>
+                    </div>
+                    <div class="crypto-body">
+                        <div class="crypto-chart"></div>
+                        <div class="crypto-price">
+                            $31,250.76
+                            <div class="crypto-change positive">+2.8%</div>
+                        </div>
+                        <div class="crypto-info">
+                            <p>Ринкова капіталізація: <span>$605 млрд</span></p>
+                            <p>Обсяг торгів (24 год): <span>$19.5 млрд</span></p>
+                            <p>Максимальна пропозиція: <span>21 млн</span></p>
+                            <p>Алгоритм консенсусу: <span>Proof-of-Work</span></p>
+                        </div>
+                        <div class="crypto-description">
+                            Перша і найвідоміша криптовалюта. Створена як альтернатива традиційним фінансовим системам. Виконує функції засобу обігу, заощадження та розрахунків.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="crypto-card animated">
+                    <div class="crypto-header">
+                        <h3><i class="fab fa-ethereum"></i> Ethereum</h3>
+                        <div class="crypto-symbol">ETH - Світовий комп'ютер</div>
+                    </div>
+                    <div class="crypto-body">
+                        <div class="crypto-chart"></div>
+                        <div class="crypto-price">
+                            $1,950.42
+                            <div class="crypto-change positive">+1.9%</div>
+                        </div>
+                        <div class="crypto-info">
+                            <p>Ринкова капіталізація: <span>$235 млрд</span></p>
+                            <p>Обсяг торгів (24 год): <span>$9.2 млрд</span></p>
+                            <p>Тип: <span>Утилітна монета</span></p>
+                            <p>Смарт-контракти: <span>Так</span></p>
+                        </div>
+                        <div class="crypto-description">
+                            Платформа для децентралізованих додатків та смарт-контрактів. Ethereum дозволяє створювати токени, DeFi-протоколи, NFT та багато іншого.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="crypto-card animated">
+                    <div class="crypto-header">
+                        <h3><i class="fab fa-btc"></i> Binance Coin</h3>
+                        <div class="crypto-symbol">BNB - Екосистема Binance</div>
+                    </div>
+                    <div class="crypto-body">
+                        <div class="crypto-chart"></div>
+                        <div class="crypto-price">
+                            $312.30
+                            <div class="crypto-change positive">+3.2%</div>
+                        </div>
+                        <div class="crypto-info">
+                            <p>Ринкова капіталізація: <span>$48.2 млрд</span></p>
+                            <p>Обсяг торгів (24 год): <span>$850 млн</span></p>
+                            <p>Використання: <span>Екосистема Binance</span></p>
+                            <p>Спалення токенів: <span>Квартальне</span></p>
+                        </div>
+                        <div class="crypto-description">
+                            Нативний токен найбільшої криптобіржі Binance. Використовується для оплати комісій, участі в IEO, стейкінгу та в екосистемі Binance Smart Chain.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="crypto-card animated">
+                    <div class="crypto-header">
+                        <h3><i class="fas fa-water"></i> Solana</h3>
+                        <div class="crypto-symbol">SOL - Швидкісна мережа</div>
+                    </div>
+                    <div class="crypto-body">
+                        <div class="crypto-chart"></div>
+                        <div class="crypto-price">
+                            $25.85
+                            <div class="crypto-change positive">+4.1%</div>
+                        </div>
+                        <div class="crypto-info">
+                            <p>Ринкова капіталізація: <span>$10.3 млрд</span></p>
+                            <p>Обсяг торгів (24 год): <span>$420 млн</span></p>
+                            <p>Швидкість транзакцій: <span>65,000 TPS</span></p>
+                            <p>Комісії: <span>Дуже низькі</span></p>
+                        </div>
+                        <div class="crypto-description">
+                            Високошвидкісний блокчейн з низькими комісіями. Використовує гібридний консенсус Proof-of-History та Proof-of-Stake для досягнення високої продуктивності.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="crypto-card animated">
+                    <div class="crypto-header">
+                        <h3><i class="fas fa-gem"></i> Cardano</h3>
+                        <div class="crypto-symbol">ADA - Науковий підхід</div>
+                    </div>
+                    <div class="crypto-body">
+                        <div class="crypto-chart"></div>
+                        <div class="crypto-price">
+                            $0.32
+                            <div class="crypto-change negative">-0.8%</div>
+                        </div>
+                        <div class="crypto-info">
+                            <p>Ринкова капіталізація: <span>$11.2 млрд</span></p>
+                            <p>Обсяг торгів (24 год): <span>$280 млн</span></p>
+                            <p>Алгоритм консенсусу: <span>Proof-of-Stake</span></p>
+                            <p>Затвердження: <span>Наукове</span></p>
+                        </div>
+                        <div class="crypto-description">
+                            Блокчейн третього покоління, розроблений на основі наукових досліджень. Відомий своєю безпекою, масштабованістю та енергоефективністю.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="crypto-card animated">
+                    <div class="crypto-header">
+                        <h3><i class="fas fa-puzzle-piece"></i> Polkadot</h3>
+                        <div class="crypto-symbol">DOT - Інтернет блокчейнів</div>
+                    </div>
+                    <div class="crypto-body">
+                        <div class="crypto-chart"></div>
+                        <div class="crypto-price">
+                            $5.45
+                            <div class="crypto-change positive">+2.1%</div>
+                        </div>
+                        <div class="crypto-info">
+                            <p>Ринкова капіталізація: <span>$6.9 млрд</span></p>
+                            <p>Обсяг торгів (24 год): <span>$180 млн</span></p>
+                            <p>Мережа парачейнів: <span>100+</span></p>
+                            <p>Можливість: <span>Інтероперабельність</span></p>
+                        </div>
+                        <div class="crypto-description">
+                            Протокол, що дозволяє різним блокчейнам взаємодіяти між собою. Створений для побудови децентралізованого інтернету (Web 3.0).
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technology Section -->
+    <section id="technology" class="tech-section">
+        <div class="container">
+            <div class="section-title animated">
+                <h2>Технології криптовалют</h2>
+                <p>Основні технології, які роблять блокчейн та криптовалюти можливими</p>
+            </div>
+            
+            <div class="tech-grid">
+                <div class="tech-card animated">
+                    <i class="fas fa-link"></i>
+                    <h3>Блокчейн</h3>
+                    <p>Децентралізована цифрова книга, яка записує всі транзакції в мережі. Кожен блок містить інформацію про попередній блок, створюючи ланцюг.</p>
+                    <a href="#" class="tech-link">Детальніше <i class="fas fa-arrow-right"></i></a>
+                </div>
+                
+                <div class="tech-card animated">
+                    <i class="fas fa-file-contract"></i>
+                    <h3>Смарт-контракти</h3>
+                    <p>Автоматизовані контракти, умови яких записані в коді. Виконуються автоматично при виконанні певних умов без посередників.</p>
+                    <a href="#" class="tech-link">Детальніше <i class="fas fa-arrow-right"></i></a>
+                </div>
+                
+                <div class="tech-card animated">
+                    <i class="fas fa-mountain"></i>
+                    <h3>Майнінг & Стейкінг</h3>
+                    <p>Майнінг (Proof-of-Work) та стейкінг (Proof-of-Stake) - механізми досягнення консенсусу в мережі та створення нових блоків.</p>
+                    <a href="#" class="tech-link">Детальніше <i class="fas fa-arrow-right"></i></a>
+                </div>
+                
+                <div class="tech-card animated">
+                    <i class="fas fa-wallet"></i>
+                    <h3>Криптогаманці</h3>
+                    <p>Програмні (MetaMask, Trust Wallet) або апаратні (Ledger, Trezor) засоби для зберігання криптовалют та приватних ключів.</p>
+                    <a href="#" class="tech-link">Детальніше <i class="fas fa-arrow-right"></i></a>
+                </div>
+                
+                <div class="tech-card animated">
+                    <i class="fas fa-exchange-alt"></i>
+                    <h3>DeFi</h3>
+                    <p>Децентралізовані фінанси - альтернатива традиційним фінансовим послугам (кредитивання, стейкінг, страхування) на основі блокчейну.</p>
+                    <a href="#" class="tech-link">Детальніше <i class="fas fa-arrow-right"></i></a>
+                </div>
+                
+                <div class="tech-card animated">
+                    <i class="fas fa-fingerprint"></i>
+                    <h3>NFT</h3>
+                    <p>Незмінні токени, які представляють унікальні цифрові або фізичні активи. Використовуються для мистецтва, колекційних предметів, ігрових активів тощо.</p>
+                    <a href="#" class="tech-link">Детальніше <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- External Link Section -->
+    <section id="external">
+        <div class="container">
+            <div class="external-section animated">
+                <h2>Додаткові ресурси</h2>
+                <p>Для більш глибокого вивчення теми криптовалют та блокчейн-технологій рекомендуємо відвідати авторитетні джерела інформації. CoinMarketCap надає детальну інформацію про ринкову капіталізацію, ціни та тенденції всіх криптовалют.</p>
+                <a href="https://coinmarketcap.com" target="_blank" class="external-link">
+                    Перейти на CoinMarketCap
+                    <i class="fas fa-external-link-alt"></i>
+                </a>
+                
+                <div class="test-notice">
+                    <p><strong>Увага:</strong> Цей сайт є тестовим проектом, створеним для демонстрації роботи нашої компанії. Він показує наші можливості у розробці сучасних, стильних та функціональних веб-сайтів з адаптивним дизайном, плавними анімаціями та оптимізацією для всіх пристроїв (ПК, планшетів та смартфонів).</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-about">
+                    <div class="footer-logo">
+                        <i class="fas fa-chart-line"></i>
+                        <span>CryptoVision</span>
+                    </div>
+                    <p>Найповніший ресурс про історію, сучасність та майбутнє криптовалют. Дізнайтеся все про блокчейн-технології та цифрові активи.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-telegram"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                        <a href="#"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-links">
+                    <h4>Швидкі посилання</h4>
+                    <ul>
+                        <li><a href="#home"><i class="fas fa-chevron-right"></i> Головна</a></li>
+                        <li><a href="#stats"><i class="fas fa-chevron-right"></i> Статистика</a></li>
+                        <li><a href="#history"><i class="fas fa-chevron-right"></i> Історія</a></li>
+                        <li><a href="#cryptocurrencies"><i class="fas fa-chevron-right"></i> Криптовалюти</a></li>
+                        <li><a href="#technology"><i class="fas fa-chevron-right"></i> Технології</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-contact">
+                    <h4>Контакти</h4>
+                    <p><i class="fas fa-map-marker-alt"></i> Україна, м. Київ</p>
+                    <p><i class="fas fa-envelope"></i> info@cryptovision.ua</p>
+                    <p><i class="fas fa-phone"></i> +380 (44) 123-45-67</p>
+                    <p><i class="fas fa-clock"></i> Пн-Пт: 9:00 - 18:00</p>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2023 CryptoVision. Всі права захищено. Цей сайт є демонстраційним проектом.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile Menu Functionality
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenuClose = document.getElementById('mobileMenuClose');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const mobileMenuOverlay = document.getElementById('mobileMenuOverlay');
+        
+        function openMobileMenu() {
+            mobileMenu.classList.add('active');
+            mobileMenuOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeMobileMenu() {
+            mobileMenu.classList.remove('active');
+            mobileMenuOverlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        
+        mobileMenuBtn.addEventListener('click', openMobileMenu);
+        mobileMenuClose.addEventListener('click', closeMobileMenu);
+        mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+        
+        // Close mobile menu when clicking on a link
+        document.querySelectorAll('.mobile-nav a').forEach(link => {
+            link.addEventListener('click', closeMobileMenu);
+        });
+        
+        // Header scroll effect
+        const header = document.getElementById('header');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                header.classList.add('header-scrolled');
+            } else {
+                header.classList.remove('header-scrolled');
+            }
+        });
+        
+        // Scroll animations
+        const animatedElements = document.querySelectorAll('.animated');
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    
+                    // Stagger animation for timeline items
+                    if (entry.target.classList.contains('timeline-item')) {
+                        const index = Array.from(document.querySelectorAll('.timeline-item')).indexOf(entry.target);
+                        entry.target.style.transitionDelay = `${index * 0.2}s`;
+                    }
+                    
+                    // Stagger animation for crypto cards
+                    if (entry.target.classList.contains('crypto-card')) {
+                        const index = Array.from(document.querySelectorAll('.crypto-card')).indexOf(entry.target);
+                        entry.target.style.transitionDelay = `${index * 0.1}s`;
+                    }
+                    
+                    // Stagger animation for tech cards
+                    if (entry.target.classList.contains('tech-card')) {
+                        const index = Array.from(document.querySelectorAll('.tech-card')).indexOf(entry.target);
+                        entry.target.style.transitionDelay = `${index * 0.1}s`;
+                    }
+                    
+                    // Stagger animation for stat cards
+                    if (entry.target.classList.contains('stat-card')) {
+                        const index = Array.from(document.querySelectorAll('.stat-card')).indexOf(entry.target);
+                        entry.target.style.transitionDelay = `${index * 0.05}s`;
+                    }
+                }
+            });
+        }, {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        });
+        
+        animatedElements.forEach(element => {
+            observer.observe(element);
+        });
+        
+        // Simulate crypto price updates
+        function updateCryptoPrices() {
+            const prices = document.querySelectorAll('.crypto-price');
+            const changes = document.querySelectorAll('.crypto-change');
+            
+            prices.forEach(priceEl => {
+                const priceText = priceEl.childNodes[0].textContent || priceEl.textContent;
+                const currentPrice = parseFloat(priceText.replace('$', '').replace(',', ''));
+                const changePercent = (Math.random() - 0.5) * 0.08;
+                const newPrice = currentPrice * (1 + changePercent);
+                
+                if (Math.random() > 0.7) {
+                    if (priceEl.childNodes[0].nodeType === 3) {
+                        priceEl.childNodes[0].textContent = '$' + newPrice.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+                    } else {
+                        priceEl.textContent = '$' + newPrice.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+                    }
+                }
+            });
+            
+            changes.forEach(changeEl => {
+                const changeText = changeEl.textContent;
+                const currentChange = parseFloat(changeText.match(/[+-]?\d+(\.\d+)?/)[0]);
+                const newChange = currentChange + (Math.random() - 0.5) * 0.4;
+                
+                if (Math.random() > 0.7) {
+                    const isPositive = newChange >= 0;
+                    changeEl.textContent = `${isPositive ? '+' : ''}${newChange.toFixed(1)}%`;
+                    changeEl.className = 'crypto-change ' + (isPositive ? 'positive' : 'negative');
+                }
+            });
+        }
+        
+        // Update prices every 8 seconds
+        setInterval(updateCryptoPrices, 8000);
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                if (this.getAttribute('href') === '#') return;
+                
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 100,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+        
+        // Preload critical images
+        window.addEventListener('load', function() {
+            const images = [
+                'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+                'https://images.unsplash.com/photo-1516245834210-8f0ecdfc62c1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+            ];
+            
+            images.forEach(src => {
+                const img = new Image();
+                img.src = src;
+            });
+        });
+        
+        // Add hover effect for buttons
+        document.querySelectorAll('.btn').forEach(button => {
+            button.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px) scale(1.05)';
+            });
+            
+            button.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+        
+        // Initialize animations on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            // Trigger initial animations
+            setTimeout(() => {
+                document.querySelector('.hero-text').style.animation = 'fadeUp 1s ease forwards';
+                document.querySelector('.hero-image').style.animation = 'fadeRight 1s ease 0.5s forwards';
+            }, 300);
+        });
+    </script>
+</body>
+</html>
