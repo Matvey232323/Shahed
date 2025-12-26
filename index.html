@@ -105,13 +105,15 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
   import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
 
+  // Ваш новый конфиг Firebase
   const firebaseConfig = {
-    apiKey: "AIzaSyDrd0gqeU2X7gjVwnDCKZGgdiEOzqkw-fA",
-    authDomain: "ua-air-map.firebaseapp.com",
-    projectId: "ua-air-map",
-    storageBucket: "ua-air-map.firebasestorage.app",
-    messagingSenderId: "314202131558",
-    appId: "1:314202131558:web:0346167a2bfc9a1f5b31a7"
+    apiKey: "AIzaSyD3ee05hVe-raPVXFTJUYIPo-xq6tTVAJ8",
+    authDomain: "ukraine-radar.firebaseapp.com",
+    databaseURL: "https://ukraine-radar-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "ukraine-radar",
+    storageBucket: "ukraine-radar.firebasestorage.app",
+    messagingSenderId: "300946505688",
+    appId: "1:300946505688:web:f2d28e5f95780ff344fcad"
   };
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
