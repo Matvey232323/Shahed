@@ -54,35 +54,35 @@
   <button class="btn primary" id="adminBtn">Вхід адміністратора</button>
 </div>
 
-<div class="panel" id="adminPanel">
-  <h3>Адмін‑панель</h3>
-  <div class="row">
-    <label>Тип</label>
-    <select id="type">
-      <option value="shahed">Shahed</option>
-      <option value="rocket">Rocket</option>
-    </select>
+  <div class="panel" id="adminPanel" style="display:none">
+    <h3>Адмін‑панель</h3>
+    <div class="row">
+      <label>Тип</label>
+      <select id="type">
+        <option value="shahed">Shahed</option>
+        <option value="rocket">Rocket</option>
+      </select>
+    </div>
+    <div class="row">
+      <label>Швидкість (симуляція)</label>
+      <input id="speed" type="number" value="180" />
+    </div>
+    <div class="row">
+      <label>Маршрут</label>
+      <select id="route">
+        <option value="direct">Прямий</option>
+        <option value="curve">Плавний</option>
+        <option value="zigzag">Зигзаг</option>
+      </select>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="spawn">Створити</button>
+      <button class="btn" id="delete" disabled>Видалити вибраний</button>
+      <button class="btn" id="pause">Пауза/Продовжити</button>
+      <button class="btn" id="clear">Очистити все</button>
+    </div>
+    <p style="color: var(--muted); font-size: 12px">Клік: старт → ціль. Клік по об'єкту — вибір.</p>
   </div>
-  <div class="row">
-    <label>Швидкість (симуляція)</label>
-    <input id="speed" type="number" value="180" />
-  </div>
-  <div class="row">
-    <label>Маршрут</label>
-    <select id="route">
-      <option value="direct">Прямий</option>
-      <option value="curve">Плавний</option>
-      <option value="zigzag">Зигзаг</option>
-    </select>
-  </div>
-  <div class="actions">
-    <button class="btn primary" id="spawn">Створити</button>
-    <button class="btn" id="delete" disabled>Видалити вибраний</button>
-    <button class="btn" id="pause">Пауза/Продовжити</button>
-    <button class="btn" id="clear">Очистити все</button>
-  </div>
-  <p style="color: var(--muted); font-size: 12px">Клік: старт → ціль. Клік по об'єкту — вибір.</p>
-</div>
 
 <div class="modal" id="login">
   <div class="box">
@@ -165,14 +165,19 @@
     return [a,b];
   }
 
-  function animate(ent) {
+  // Синхронизированная анимация через Firestore
+  import { updateDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
+  async function animate(ent) {
     let lastTime = null;
     let totalDistance = 0;
     for(let i=0;i<ent.path.length-1;i++) totalDistance+=map.distance(ent.path[i],ent.path[i+1]);
-    let traveled=0; ent.i=0;
-    function move(currentTime) {
+    let traveled = ent.traveled || 0;
+    ent.i = ent.i || 0;
+    ent.segmentStartDistance = ent.segmentStartDistance || 0;
+    let pausedRemote = false;
+    async function move(currentTime) {
       if(!lastTime) lastTime=currentTime;
-      if(paused||ent.i>=ent.path.length-1){ if(ent.i<ent.path.length-1) ent.animationId=requestAnimationFrame(move); return; }
+      if(paused || pausedRemote || ent.i>=ent.path.length-1){ if(ent.i<ent.path.length-1) ent.animationId=requestAnimationFrame(move); return; }
       const deltaTime=(currentTime-lastTime)/1000; lastTime=currentTime;
       const distance=ent.speed*(deltaTime/3600); let remaining=distance*1000;
       while(remaining>0&&ent.i<ent.path.length-1){
@@ -193,9 +198,19 @@
           ent.segmentStartDistance=traveled;
         }
       }
+      // Сохраняем текущее положение и прогресс в Firestore
+      try {
+        await updateDoc(doc(db, 'entities', ent.id), {
+          current: ent.marker.getLatLng(),
+          i: ent.i,
+          traveled: traveled,
+          segmentStartDistance: ent.segmentStartDistance,
+          lastUpdate: Date.now(),
+          paused: paused
+        });
+      } catch(e) {}
       if(ent.i<ent.path.length-1) ent.animationId=requestAnimationFrame(move);
     }
-    ent.segmentStartDistance=0;
     if(ent.path.length>1) updateIconRotation(ent.marker,calculateBearing(ent.path[0],ent.path[1]));
     ent.animationId=requestAnimationFrame(move);
   }
@@ -225,12 +240,18 @@
       animate(ent);
       setStatus('Додано');
 
-      // Сохраняем в Firebase
+      // Сохраняем в Firebase с начальными параметрами для синхронизации
       await addDoc(entitiesCol,{
         id: ent.id,
         type: ent.type,
         speed: ent.speed,
-        path: ent.path.map(p=>({lat:p.lat,lng:p.lng}))
+        path: ent.path.map(p=>({lat:p.lat,lng:p.lng})),
+        current: { lat: start.lat, lng: start.lng },
+        i: 0,
+        traveled: 0,
+        segmentStartDistance: 0,
+        lastUpdate: Date.now(),
+        paused: false
       });
     }
   });
@@ -238,17 +259,25 @@
   // Подписка на изменения в Firestore
   onSnapshot(entitiesCol, snapshot=>{
     snapshot.docChanges().forEach(change=>{
-      if(change.type==='added'){
+      if(change.type==='added'||change.type==='modified'){
         const data=change.doc.data();
-        if(entities.some(e=>e.id===data.id)) return;
+        let ent=entities.find(e=>e.id===data.id);
         const path=data.path.map(p=>L.latLng(p.lat,p.lng));
         const initialBearing=path.length>1?calculateBearing(path[0],path[1]):0;
-        const marker=L.marker(path[0],{icon:iconFor(data.type,initialBearing)}).addTo(map);
-        marker.bindPopup(data.type==='shahed'?'Шахед':'Ракета');
-        const ent={id:data.id,type:data.type,marker,path,speed:data.speed,i:0,routeLine:null,currentBearing:initialBearing};
-        marker.on('click',()=>{selected=ent; document.getElementById('delete').disabled=false; marker.openPopup();});
-        entities.push(ent);
-        animate(ent);
+        if(!ent){
+          const marker=L.marker(data.current||path[0],{icon:iconFor(data.type,initialBearing)}).addTo(map);
+          marker.bindPopup(data.type==='shahed'?'Шахед':'Ракета');
+          ent={id:data.id,type:data.type,marker,path,speed:data.speed,i:data.i||0,routeLine:null,currentBearing:initialBearing,traveled:data.traveled||0,segmentStartDistance:data.segmentStartDistance||0};
+          marker.on('click',()=>{selected=ent; document.getElementById('delete').disabled=false; marker.openPopup();});
+          entities.push(ent);
+          animate(ent);
+        } else {
+          // Обновляем положение и прогресс
+          if(data.current) ent.marker.setLatLng(data.current);
+          ent.i = data.i||0;
+          ent.traveled = data.traveled||0;
+          ent.segmentStartDistance = data.segmentStartDistance||0;
+        }
       }
       if(change.type==='removed'){
         const data=change.doc.data();
@@ -264,7 +293,7 @@
     });
   });
 
-  // Админ-панель и кнопки как у вас
+  // Админ-панель и кнопки: вход только для управления
   document.getElementById('adminBtn').onclick=()=>login.style.display='flex';
   document.getElementById('cancel').onclick=()=>login.style.display='none';
   document.getElementById('loginBtn').onclick=()=>{
@@ -272,16 +301,20 @@
       adminPanel.style.display='block'; login.style.display='none'; setStatus('Адмін активний');
     } else alert('Невірний пароль');
   };
-  document.getElementById('spawn').onclick=()=>{spawnMode=true; stage=0; setStatus('Клікніть старт');};
-  document.getElementById('pause').onclick=()=>{paused=!paused; setStatus(paused?'Пауза':'Продовжено');};
+  // Кнопки управления доступны только если админ-панель открыта
+  document.getElementById('spawn').onclick=()=>{if(adminPanel.style.display==='block'){spawnMode=true; stage=0; setStatus('Клікніть старт');}};
+  document.getElementById('pause').onclick=()=>{if(adminPanel.style.display==='block'){paused=!paused; setStatus(paused?'Пауза':'Продовжено');}};
   document.getElementById('clear').onclick=async ()=>{
+    if(adminPanel.style.display!=='block') return;
     entities.forEach(e=>{ cancelAnimationFrame(e.animationId); map.removeLayer(e.marker); if(e.routeLine) map.removeLayer(e.routeLine); });
     entities.length=0;
     setStatus('Очищено');
-    const allDocs = await entitiesCol.get();
-    snapshot.docs.forEach(docSnap=>deleteDoc(doc(db,'entities',docSnap.id)));
+    // Удалить все объекты из Firestore
+    const qSnap = await getDocs(entitiesCol);
+    qSnap.forEach(docSnap=>deleteDoc(doc(db,'entities',docSnap.id)));
   };
   document.getElementById('delete').onclick=async ()=>{
+    if(adminPanel.style.display!=='block') return;
     if(!selected) return;
     cancelAnimationFrame(selected.animationId);
     map.removeLayer(selected.marker);
@@ -304,3 +337,4 @@
 </script>
 </body>
 </html>
+
