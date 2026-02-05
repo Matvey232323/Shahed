@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Talktok — Minimalist Video Feed</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000;
+            color: #fff;
+            margin: 0;
+            overflow: hidden;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes likeHeart {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .animate-marquee { animation: marquee 12s linear infinite; }
+        .animate-fadeIn { animation: fadeIn 0.3s ease-out; }
+        .animate-like { animation: likeHeart 0.3s ease-out; }
+        .animate-slideUp { animation: slideUp 0.3s ease-out; }
+        .video-container {
+            height: 100vh;
+            scroll-snap-type: y mandatory;
+            overflow-y: scroll;
+        }
+        .video-card {
+            scroll-snap-align: start;
+            height: 100vh;
+            position: relative;
+        }
+        .like-animation { animation: likeHeart 0.4s ease-out; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+        
+        // Импорт иконок через SVG (Lucide-like)
+        const Icon = ({ name, size = 24, fill = "none", className = "" }) => {
+            const icons = {
+                heart: <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />,
+                message: <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />,
+                share: <><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" /><polyline points="16 6 12 2 8 6" /><line x1="12" x2="12" y1="2" y2="15" /></>,
+                bookmark: <><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" /></>,
+                user: <><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></>,
+                home: <><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></>,
+                plus: <><rect width="18" height="18" x="3" y="3" rx="2" /><line x1="12" x2="12" y1="8" y2="16" /><line x1="8" x2="16" y1="12" y2="12" /></>,
+                volume2: <><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><path d="M15.54 8.46a5 5 0 0 1 0 7.07" /><path d="M19.07 4.93a10 10 0 0 1 0 14.14" /></>,
+                volumeX: <><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><line x1="22" x2="16" y1="9" y2="15" /><line x1="16" x2="22" y1="9" y2="15" /></>,
+                send: <><path d="m22 2-7 20-4-9-9-4Z" /><path d="M22 2 11 13" /></>,
+                compass: <><circle cx="12" cy="12" r="10" /><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" /></>,
+                play: <polygon points="5 3 19 12 5 21 5 3" />,
+                search: <><circle cx="11" cy="11" r="8" /><line x1="21" x2="16.65" y1="21" y2="16.65" /></>,
+                bell: <><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></>,
+                chat: <><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></>,
+                back: <><polyline points="15 18 9 12 15 6" /></>,
+                heartFill: <><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" fill="currentColor" /></>,
+                video: <><polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" ry="2" /></>,
+                hash: <><line x1="4" x2="20" y1="9" y2="9" /><line x1="4" x2="20" y1="15" y2="15" /><line x1="10" x2="8" y1="3" y2="21" /></>
+            };
+
+            return (
+                <svg 
+                    width={size} 
+                    height={size} 
+                    viewBox="0 0 24 24" 
+                    fill={fill} 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    className={className}
+                >
+                    {icons[name] || null}
+                </svg>
+            );
+        };
+
+        const INITIAL_VIDEOS = [
+            {
+                id: 1,
+                url: "https://assets.mixkit.co/videos/preview/mixkit-urban-street-view-at-night-1165-large.mp4",
+                user: "night_rider",
+                description: "Ночные огни и бесконечные дороги. Только лучшие вайбы. #city #nightlife",
+                likes: 12400,
+                comments: 234,
+                music: "Night Drive - Kavinsky Style",
+                isFollowed: false,
+                avatar: "from-purple-500 to-pink-500"
+            },
+            {
+                id: 2,
+                url: "https://assets.mixkit.co/videos/preview/mixkit-waves-coming-to-the-beach-shore-at-sunset-1213-large.mp4",
+                user: "ocean_view",
+                description: "Терапия закатом для души. 🌊 #ocean #sunset #calm",
+                likes: 45100,
+                comments: 892,
+                music: "Beach Waves - Ambient Sounds",
+                isFollowed: true,
+                avatar: "from-blue-500 to-cyan-500"
+            },
+            {
+                id: 3,
+                url: "https://assets.mixkit.co/videos/preview/mixkit-coffee-beans-falling-into-a-glass-1175-large.mp4",
+                user: "coffee_master",
+                description: "Утренняя рутина в 4K. Свежая обжарка. ☕ #coffee #aesthetic",
+                likes: 8900,
+                comments: 156,
+                music: "Jazz Cafe - Lofi Beats",
+                isFollowed: false,
+                avatar: "from-amber-500 to-orange-500"
+            },
+            {
+                id: 4,
+                url: "https://assets.mixkit.co/videos/preview/mixkit-forest-stream-in-the-sunlight-529-large.mp4",
+                user: "nature_lover",
+                description: "Лесная терапия 🌲 #nature #forest #peace",
+                likes: 32100,
+                comments: 445,
+                music: "Forest Sounds - Nature Vibes",
+                isFollowed: true,
+                avatar: "from-green-500 to-emerald-500"
+            },
+            {
+                id: 5,
+                url: "https://assets.mixkit.co/videos/preview/mixkit-aerial-view-of-city-traffic-at-night-11-large.mp4",
+                user: "city_life",
+                description: "Вид сверху на ночной мегаполис 🏙️ #city #aerial #night",
+                likes: 56700,
+                comments: 1203,
+                music: "Urban Beats - City Nights",
+                isFollowed: false,
+                avatar: "from-indigo-500 to-purple-500"
+            },
+            {
+                id: 6,
+                url: "https://assets.mixkit.co/videos/preview/mixkit-sun-setting-over-palm-trees-1175-large.mp4",
+                user: "sunset_chaser",
+                description: "Закат в раю 🌅 #sunset #paradise #dreams",
+                likes: 78900,
+                comments: 2341,
+                music: "Tropical Vibes - Sunset Mix",
+                isFollowed: true,
+                avatar: "from-orange-500 to-red-500"
+            }
+        ];
+
+        // Mock user profile
+        const CURRENT_USER = {
+            username: "my_profile",
+            fullName: "Мой профиль",
+            avatar: "from-zinc-500 to-zinc-700",
+            posts: 142,
+            followers: "12.5K",
+            following: "892",
+            bio: "Создатель контента 🎬 | Talktok lover ❤️",
+            likedVideos: [1, 3, 5]
+        };
+
+        // Mock chats
+        const INITIAL_CHATS = [
+            { id: 1, user: "night_rider", avatar: "from-purple-500 to-pink-500", lastMessage: "Отличное видео! 🔥", time: "2 мин", unread: 2 },
+            { id: 2, user: "ocean_view", avatar: "from-blue-500 to-cyan-500", lastMessage: "Скинь ссылку на трек", time: "15 мин", unread: 0 },
+            { id: 3, user: "coffee_master", avatar: "from-amber-500 to-orange-500", lastMessage: "Как сделать такой угол?", time: "1 час", unread: 1 },
+            { id: 4, user: "sunset_chaser", avatar: "from-orange-500 to-red-500", lastMessage: "Давай снимать вместе!", time: "3 час", unread: 0 }
+        ];
+
+        // Mock explore grid videos
+        const EXPLORE_VIDEOS = [
+            { id: 101, thumbnail: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=400&fit=crop", user: "travel_gram", likes: "45.2K", views: "892K" },
+            { id: 102, thumbnail: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=300&h=400&fit=crop", user: "fitness_pro", likes: "32.1K", views: "567K" },
+            { id: 103, thumbnail: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=400&fit=crop", user: "nature_lover", likes: "67.8K", views: "1.2M" },
+            { id: 104, thumbnail: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=300&h=400&fit=crop", user: "foodie_paradise", likes: "89.3K", views: "1.5M" },
+            { id: 105, thumbnail: "https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=300&h=400&fit=crop", user: "tech_guru", likes: "23.4K", views: "445K" },
+            { id: 106, thumbnail: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300&h=400&fit=crop", user: "dance_master", likes: "156K", views: "3.4M" },
+            { id: 107, thumbnail: "https://images.unsplash.com/photo-1492633423870-43d1cd2775eb?w=300&h=400&fit=crop", user: "life_adventures", likes: "78.5K", views: "1.1M" },
+            { id: 108, thumbnail: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=300&h=400&fit=crop", user: "gym_rat", likes: "34.2K", views: "678K" },
+            { id: 109, thumbnail: "https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?w=300&h=400&fit=crop", user: "travel_diaries", likes: "92.1K", views: "1.8M" },
+            { id: 110, thumbnail: "https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?w=300&h=400&fit=crop", user: "weather_channel", likes: "45.6K", views: "890K" },
+            { id: 111, thumbnail: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&h=400&fit=crop", user: "mountain_climber", likes: "67.3K", views: "1.3M" },
+            { id: 112, thumbnail: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&h=400&fit=crop", user: "beach_vibes", likes: "88.9K", views: "1.7M" }
+        ];
+
+        // Hashtags for search suggestions
+        const HASHTAGS = ["#trending", "#viral", "#fyp", "#foryou", "#dance", "#comedy", "#music", "#travel", "#food", "#fitness", "#beauty", "#gaming"];
+
+        const VideoPlayer = ({ video, isActive, onFollowToggle, onDoubleTap, showComments, onToggleComments }) => {
+            const videoRef = useRef(null);
+            const [playing, setPlaying] = useState(false);
+            const [muted, setMuted] = useState(true);
+            const [liked, setLiked] = useState(false);
+            const [saved, setSaved] = useState(false);
+            const [localLikes, setLocalLikes] = useState(video.likes);
+            const [showPlayIcon, setShowPlayIcon] = useState(false);
+            const lastTapRef = useRef(0);
+
+            useEffect(() => {
+                if (isActive) {
+                    videoRef.current.play().catch(() => {});
+                    setPlaying(true);
+                } else {
+                    videoRef.current.pause();
+                    setPlaying(false);
+                }
+            }, [isActive]);
+
+            const togglePlay = () => {
+                const now = Date.now();
+                if (now - lastTapRef.current < 300) {
+                    // Double tap
+                    handleLike();
+                    onDoubleTap && onDoubleTap();
+                    lastTapRef.current = 0;
+                    return;
+                }
+                lastTapRef.current = now;
+                
+                if (playing) {
+                    videoRef.current.pause();
+                    setShowPlayIcon(true);
+                    setTimeout(() => setShowPlayIcon(false), 500);
+                } else {
+                    videoRef.current.play();
+                }
+                setPlaying(!playing);
+            };
+
+            const handleLike = () => {
+                setLiked(!liked);
+                setLocalLikes(prev => liked ? prev - 1 : prev + 1);
+            };
+
+            const handleShare = () => {
+                if (navigator.share) {
+                    navigator.share({
+                        title: `Video by @${video.user}`,
+                        text: video.description,
+                        url: window.location.href
+                    });
+                } else {
+                    navigator.clipboard.writeText(`Check out this video by @${video.user}: ${video.description}`);
+                    alert("Link copied to clipboard!");
+                }
+            };
+
+            const formatCount = (num) => {
+                return num >= 1000 ? (num / 1000).toFixed(1) + 'K' : num;
+            };
+
+            return (
+                <div className="video-card w-full flex items-center justify-center bg-black overflow-hidden">
+                    <div 
+                        className="absolute inset-0 w-full h-full"
+                        onTouchEnd={togglePlay}
+                        onClick={togglePlay}
+                    >
+                        <video
+                            ref={videoRef}
+                            src={video.url}
+                            loop
+                            muted={muted}
+                            className="w-full h-full object-cover cursor-pointer"
+                        />
+                    </div>
+                    
+                    {showPlayIcon && (
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-fadeIn">
+                            <div className="bg-black/20 p-6 rounded-full backdrop-blur-sm">
+                                <Icon name="play" size={48} fill="white" className="text-white" />
+                            </div>
+                        </div>
+                    )}
+
+                    {!playing && !showPlayIcon && (
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-fadeIn">
+                            <div className="bg-black/20 p-6 rounded-full backdrop-blur-sm">
+                                <Icon name="play" size={48} fill="white" className="text-white" />
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="absolute right-3 bottom-24 flex flex-col items-center gap-5 z-10">
+                        <div className="flex flex-col items-center gap-1">
+                            <button 
+                                onClick={handleLike} 
+                                className={`p-3 rounded-full bg-zinc-900/40 backdrop-blur-xl transition-all active:scale-90 ${liked ? 'text-red-500' : 'text-white'}`}
+                            >
+                                <Icon name={liked ? "heartFill" : "heart"} fill={liked ? "currentColor" : "none"} size={26} />
+                            </button>
+                            <span className="text-[11px] font-semibold text-white">{formatCount(localLikes)}</span>
+                        </div>
+                        <div className="flex flex-col items-center gap-1">
+                            <button 
+                                onClick={onToggleComments}
+                                className={`p-3 rounded-full bg-zinc-900/40 backdrop-blur-xl transition-all active:scale-90 ${showComments ? 'text-white' : 'text-white'}`}
+                            >
+                                <Icon name="message" size={26} />
+                            </button>
+                            <span className="text-[11px] font-semibold text-white">{video.comments}</span>
+                        </div>
+                        <div className="flex flex-col items-center gap-1">
+                            <button 
+                                onClick={() => setSaved(!saved)} 
+                                className={`p-3 rounded-full bg-zinc-900/40 backdrop-blur-xl transition-all active:scale-90 ${saved ? 'text-yellow-400' : 'text-white'}`}
+                            >
+                                <Icon name="bookmark" fill={saved ? "currentColor" : "none"} size={26} />
+                            </button>
+                            <span className="text-[11px] font-semibold text-white">Save</span>
+                        </div>
+                        <div className="flex flex-col items-center gap-1">
+                            <button 
+                                onClick={handleShare}
+                                className="p-3 rounded-full bg-zinc-900/40 backdrop-blur-xl text-white transition-all active:scale-90"
+                            >
+                                <Icon name="share" size={26} />
+                            </button>
+                            <span className="text-[11px] font-semibold text-white">Share</span>
+                        </div>
+                        <button 
+                            onClick={() => setMuted(!muted)} 
+                            className="p-3 rounded-full bg-zinc-900/40 backdrop-blur-xl text-white mt-4 transition-all active:scale-90"
+                        >
+                            {muted ? <Icon name="volumeX" size={20} /> : <Icon name="volume2" size={20} />}
+                        </button>
+                    </div>
+
+                    <div className="absolute bottom-0 left-0 right-0 p-5 pt-20 bg-gradient-to-t from-black/90 via-black/20 to-transparent text-white z-10">
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className={`w-10 h-10 rounded-full border-2 border-white/20 bg-gradient-to-br ${video.avatar} flex items-center justify-center overflow-hidden`}>
+                                <Icon name="user" size={20} />
+                            </div>
+                            <span className="font-bold text-base">@{video.user}</span>
+                            <button 
+                                onClick={() => onFollowToggle(video.id)}
+                                className={`ml-2 px-4 py-1.5 rounded-full text-xs font-bold transition-all hover:scale-105 ${video.isFollowed ? 'bg-zinc-800 text-white border border-zinc-700' : 'bg-white text-black hover:bg-zinc-200'}`}
+                            >
+                                {video.isFollowed ? 'Following' : 'Follow'}
+                            </button>
+                        </div>
+                        <p className="text-sm font-medium mb-4 leading-relaxed max-w-[85%]">{video.description}</p>
+                        <div className="flex items-center gap-2 text-xs font-semibold bg-white/10 w-fit px-3 py-1 rounded-full backdrop-blur-md animate-pulse">
+                           <span>🎵</span> {video.music}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // Profile View Component
+        const ProfileView = ({ onBack }) => {
+            return (
+                <div className="flex-1 bg-black overflow-y-auto animate-fadeIn">
+                    <div className="p-6">
+                        <button onClick={onBack} className="mb-6 p-2 rounded-full bg-zinc-800/50 hover:bg-zinc-700 transition-colors">
+                            <Icon name="back" size={20} />
+                        </button>
+                        
+                        <div className="flex flex-col items-center mb-6">
+                            <div className={`w-24 h-24 rounded-full bg-gradient-to-br ${CURRENT_USER.avatar} flex items-center justify-center mb-4`}>
+                                <Icon name="user" size={40} />
+                            </div>
+                            <h2 className="text-2xl font-black">{CURRENT_USER.fullName}</h2>
+                            <p className="text-zinc-400">@{CURRENT_USER.username}</p>
+                        </div>
+                        
+                        <p className="text-center text-sm mb-6">{CURRENT_USER.bio}</p>
+                        
+                        <div className="flex justify-center gap-8 mb-8">
+                            <div className="text-center">
+                                <p className="text-xl font-bold">{CURRENT_USER.posts}</p>
+                                <p className="text-xs text-zinc-500">Posts</p>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-xl font-bold">{CURRENT_USER.followers}</p>
+                                <p className="text-xs text-zinc-500">Followers</p>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-xl font-bold">{CURRENT_USER.following}</p>
+                                <p className="text-xs text-zinc-500">Following</p>
+                            </div>
+                        </div>
+                        
+                        <div className="flex gap-3">
+                            <button className="flex-1 bg-white text-black py-2 rounded-lg font-semibold hover:bg-zinc-200 transition-colors">
+                                Edit Profile
+                            </button>
+                            <button className="px-4 py-2 rounded-lg bg-zinc-800 font-semibold hover:bg-zinc-700 transition-colors">
+                                Share
+                            </button>
+                        </div>
+                        
+                        <div className="mt-8">
+                            <h3 className="text-lg font-bold mb-4">Saved</h3>
+                            <div className="grid grid-cols-3 gap-1">
+                                {INITIAL_VIDEOS.slice(0, 3).map((video, i) => (
+                                    <div key={i} className="aspect-square bg-zinc-800 rounded overflow-hidden relative">
+                                        <video src={video.url} className="w-full h-full object-cover" muted />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        
+                        <div className="mt-8">
+                            <h3 className="text-lg font-bold mb-4">Liked</h3>
+                            <div className="grid grid-cols-3 gap-1">
+                                {INITIAL_VIDEOS.filter(v => v.id % 2 === 0).map((video, i) => (
+                                    <div key={i} className="aspect-square bg-zinc-800 rounded overflow-hidden relative">
+                                        <video src={video.url} className="w-full h-full object-cover" muted />
+                                        <div className="absolute bottom-1 left-1">
+                                            <Icon name="heartFill" size={12} className="text-red-500" fill="currentColor" />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // Notifications/Chats View Component
+        const ChatsView = ({ onBack }) => {
+            const [chats, setChats] = useState(INITIAL_CHATS);
+            const [activeTab, setActiveTab] = useState('chats');
+            
+            return (
+                <div className="flex-1 bg-black overflow-hidden animate-fadeIn">
+                    <div className="p-6">
+                        <div className="flex items-center gap-4 mb-6">
+                            <button onClick={onBack} className="p-2 rounded-full bg-zinc-800/50 hover:bg-zinc-700 transition-colors">
+                                <Icon name="back" size={20} />
+                            </button>
+                            <h2 className="text-xl font-black">Messages</h2>
+                        </div>
+                        
+                        <div className="flex gap-2 mb-4">
+                            <button 
+                                onClick={() => setActiveTab('chats')}
+                                className={`flex-1 py-2 rounded-lg font-semibold transition-colors ${activeTab === 'chats' ? 'bg-white text-black' : 'bg-zinc-800 text-white'}`}
+                            >
+                                Chats
+                            </button>
+                            <button 
+                                onClick={() => setActiveTab('notifications')}
+                                className={`flex-1 py-2 rounded-lg font-semibold transition-colors ${activeTab === 'notifications' ? 'bg-white text-black' : 'bg-zinc-800 text-white'}`}
+                            >
+                                Notifications
+                            </button>
+                        </div>
+                        
+                        {activeTab === 'chats' ? (
+                            <div className="space-y-2">
+                                {chats.map(chat => (
+                                    <div key={chat.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-zinc-900 transition-colors cursor-pointer">
+                                        <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${chat.avatar} flex items-center justify-center flex-shrink-0`}>
+                                            <Icon name="user" size={20} />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex justify-between items-center">
+                                                <p className="font-semibold">{chat.user}</p>
+                                                <p className="text-xs text-zinc-500">{chat.time}</p>
+                                            </div>
+                                            <p className="text-sm text-zinc-400 truncate">{chat.lastMessage}</p>
+                                        </div>
+                                        {chat.unread > 0 && (
+                                            <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center text-xs font-bold">
+                                                {chat.unread}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-3 p-3 rounded-xl bg-zinc-900/50">
+                                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center">
+                                        <Icon name="heartFill" size={20} fill="white" className="text-white" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="font-semibold">New likes</p>
+                                        <p className="text-sm text-zinc-400">night_rider and 5 others liked your video</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3 p-3 rounded-xl bg-zinc-900/50">
+                                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
+                                        <Icon name="user" size={20} />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="font-semibold">New followers</p>
+                                        <p className="text-sm text-zinc-400">ocean_view started following you</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3 p-3 rounded-xl bg-zinc-900/50">
+                                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
+                                        <Icon name="message" size={20} />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="font-semibold">Comments</p>
+                                        <p className="text-sm text-zinc-400">alex_vfx commented on your video</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        // Explore View Component
+        const ExploreView = ({ onBack }) => {
+            const [searchQuery, setSearchQuery] = useState("");
+            const [videos] = useState(EXPLORE_VIDEOS);
+            
+            const filteredVideos = videos.filter(v => 
+                v.user.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                v.likes.includes(searchQuery.replace('K', ''))
+            );
+
+            return (
+                <div className="flex-1 bg-black overflow-y-auto animate-fadeIn">
+                    <div className="p-4">
+                        <div className="flex items-center gap-3 mb-4">
+                            <button onClick={onBack} className="p-2 rounded-full bg-zinc-800/50 hover:bg-zinc-700 transition-colors flex-shrink-0">
+                                <Icon name="back" size={20} />
+                            </button>
+                            <div className="relative flex-1">
+                                <Icon name="search" size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                                <input 
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder="Search users, videos, hashtags..."
+                                    className="w-full bg-zinc-800 rounded-xl py-2.5 pl-10 pr-4 text-sm outline-none focus:ring-2 focus:ring-white/20 transition-all"
+                                />
+                            </div>
+                        </div>
+                        
+                        {!searchQuery && (
+                            <div className="mb-4">
+                                <h3 className="text-sm font-semibold text-zinc-400 mb-2">Trending Hashtags</h3>
+                                <div className="flex flex-wrap gap-2">
+                                    {HASHTAGS.map(tag => (
+                                        <button key={tag} className="px-3 py-1.5 rounded-full bg-zinc-800 text-sm hover:bg-zinc-700 transition-colors">
+                                            {tag}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                        
+                        <div className="grid grid-cols-3 gap-1 pb-20">
+                            {filteredVideos.map(video => (
+                                <div key={video.id} className="aspect-square bg-zinc-900 rounded overflow-hidden relative cursor-pointer group">
+                                    <img src={video.thumbnail} alt="" className="w-full h-full object-cover" />
+                                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    <div className="absolute bottom-2 left-2">
+                                        <p className="text-xs font-bold">@{video.user}</p>
+                                        <div className="flex items-center gap-1 mt-1">
+                                            <Icon name="heartFill" size={10} fill="white" className="text-white" />
+                                            <span className="text-[10px]">{video.likes}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        
+                        {filteredVideos.length === 0 && (
+                            <div className="text-center py-12 text-zinc-400">
+                                <Icon name="search" size={48} className="mx-auto mb-2 opacity-50" />
+                                <p>No results found for "{searchQuery}"</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        function App() {
+            const [videos, setVideos] = useState(INITIAL_VIDEOS);
+            const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+            const [commentText, setCommentText] = useState("");
+            const [showComments, setShowComments] = useState(false);
+            const [activeTab, setActiveTab] = useState('forYou'); // forYou, following
+            const [currentView, setCurrentView] = useState('home'); // home, profile, chats, explore
+            const containerRef = useRef(null);
+            const [doubleTapLike, setDoubleTapLike] = useState(false);
+
+            const handleScroll = () => {
+                if (containerRef.current) {
+                    const index = Math.round(containerRef.current.scrollTop / containerRef.current.clientHeight);
+                    setCurrentVideoIndex(index);
+                    setShowComments(false);
+                }
+            };
+
+            const toggleFollow = (id) => {
+                setVideos(prev => prev.map(v => v.id === id ? { ...v, isFollowed: !v.isFollowed } : v));
+            };
+
+            const handleDoubleTap = () => {
+                setDoubleTapLike(true);
+                setTimeout(() => setDoubleTapLike(false), 500);
+            };
+
+            const filteredVideos = activeTab === 'following' 
+                ? videos.filter(v => v.isFollowed)
+                : videos;
+
+            const handleNavigate = (view) => {
+                setCurrentView(view);
+            };
+
+            const renderMainContent = () => {
+                if (currentView === 'profile') {
+                    return <ProfileView onBack={() => setCurrentView('home')} />;
+                }
+                if (currentView === 'chats') {
+                    return <ChatsView onBack={() => setCurrentView('home')} />;
+                }
+                if (currentView === 'explore') {
+                    return <ExploreView onBack={() => setCurrentView('home')} />;
+                }
+
+                return (
+                    <>
+                        <header className="absolute top-0 left-0 right-0 z-20 flex justify-center items-center gap-6 p-6">
+                            <button 
+                                onClick={() => setActiveTab('following')}
+                                className={`text-sm font-bold transition-all ${activeTab === 'following' ? 'text-white' : 'text-zinc-400'}`}
+                            >
+                                Following
+                            </button>
+                            <button 
+                                onClick={() => setActiveTab('forYou')}
+                                className={`text-sm font-bold transition-all ${activeTab === 'forYou' ? 'text-white' : 'text-zinc-400'}`}
+                            >
+                                For You
+                            </button>
+                        </header>
+
+                        <div ref={containerRef} onScroll={handleScroll} className="video-container no-scrollbar">
+                            {filteredVideos.length > 0 ? (
+                                filteredVideos.map((video, index) => (
+                                    <VideoPlayer 
+                                        key={video.id} 
+                                        video={video} 
+                                        isActive={index === currentVideoIndex} 
+                                        onFollowToggle={toggleFollow}
+                                        onDoubleTap={handleDoubleTap}
+                                        showComments={showComments && index === currentVideoIndex}
+                                        onToggleComments={() => setShowComments(!showComments)}
+                                    />
+                                ))
+                            ) : (
+                                <div className="h-screen flex flex-col items-center justify-center text-zinc-400">
+                                    <Icon name="user" size={48} className="mb-4 opacity-50" />
+                                    <p className="text-lg font-semibold">No videos yet</p>
+                                    <p className="text-sm">Follow some users to see their videos here</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Comments Overlay - Mobile */}
+                        <div className={`lg:hidden fixed inset-0 z-50 bg-black/80 transition-all duration-300 ${showComments ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                            <div className={`absolute bottom-0 left-0 right-0 bg-[#0d0d0d] rounded-t-2xl max-h-[70vh] overflow-hidden transition-transform duration-300 ${showComments ? 'translate-y-0' : 'translate-y-full'}`}>
+                                <div className="p-4 border-b border-zinc-800 flex items-center justify-center">
+                                    <div className="w-12 h-1 bg-zinc-700 rounded-full" />
+                                </div>
+                                <div className="p-4 border-b border-zinc-800">
+                                    <h3 className="text-lg font-bold">Comments</h3>
+                                </div>
+                                <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                                    <div className="flex gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-pink-500 shrink-0"></div>
+                                        <div className="flex-1">
+                                            <p className="text-sm font-bold">alex_vfx</p>
+                                            <p className="text-sm text-zinc-400 mt-1">Офигенный дизайн, очень чисто!</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 shrink-0"></div>
+                                        <div className="flex-1">
+                                            <p className="text-sm font-bold">user_pro</p>
+                                            <p className="text-sm text-zinc-400 mt-1">Love this! ❤️</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 shrink-0"></div>
+                                        <div className="flex-1">
+                                            <p className="text-sm font-bold">creative_mind</p>
+                                            <p className="text-sm text-zinc-400 mt-1">Amazing content!</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="p-4 border-t border-zinc-800">
+                                   <div className="relative flex items-center gap-2 bg-zinc-900 rounded-xl p-2 px-3 border border-zinc-800">
+                                        <input 
+                                            type="text" 
+                                            value={commentText}
+                                            onChange={(e) => setCommentText(e.target.value)}
+                                            placeholder="Add comment..." 
+                                            className="flex-1 bg-transparent border-none text-sm outline-none"
+                                        />
+                                        <button className={`p-1.5 rounded-lg transition-colors ${commentText ? 'text-white hover:bg-zinc-700' : 'text-zinc-700'}`}>
+                                            <Icon name="send" size={18} />
+                                        </button>
+                                   </div>
+                                </div>
+                                <button 
+                                    onClick={() => setShowComments(false)}
+                                    className="absolute top-4 right-4 p-2 bg-zinc-800 rounded-full"
+                                >
+                                    <Icon name="back" size={18} className="rotate-90" />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Mobile Nav */}
+                        <nav className="md:hidden flex justify-around items-center p-4 bg-black border-t border-zinc-900 z-20">
+                           <button 
+                                onClick={() => setCurrentView('home')}
+                                className={`flex flex-col items-center gap-1 ${currentView === 'home' ? 'text-white' : 'text-zinc-600'}`}
+                           >
+                               <Icon name="home" size={22} />
+                           </button>
+                           <button 
+                                onClick={() => setCurrentView('explore')}
+                                className={`flex flex-col items-center gap-1 ${currentView === 'explore' ? 'text-white' : 'text-zinc-600'}`}
+                           >
+                               <Icon name="compass" size={22} />
+                           </button>
+                           <div className="w-11 h-11 bg-white rounded-lg flex items-center justify-center text-black cursor-pointer hover:bg-zinc-200 transition-colors">
+                                <Icon name="plus" size={18} />
+                           </div>
+                           <button 
+                                onClick={() => setCurrentView('chats')}
+                                className={`flex flex-col items-center gap-1 ${currentView === 'chats' ? 'text-white' : 'text-zinc-600'}`}
+                           >
+                               <Icon name="message" size={22} />
+                           </button>
+                           <button 
+                                onClick={() => setCurrentView('profile')}
+                                className={`flex flex-col items-center gap-1 ${currentView === 'profile' ? 'text-white' : 'text-zinc-600'}`}
+                           >
+                               <Icon name="user" size={22} />
+                           </button>
+                        </nav>
+                    </>
+                );
+            };
+
+            return (
+                <div className="flex h-screen bg-[#0d0d0d] text-zinc-100 overflow-hidden">
+                    {/* Sidebar Desktop */}
+                    <aside className="hidden md:flex w-64 flex-col bg-black border-r border-zinc-800/50 p-4">
+                        <div className="flex items-center gap-3 px-3 py-6 mb-6">
+                            <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center">
+                                <div className="w-5 h-5 bg-black rounded-sm rotate-45"></div>
+                            </div>
+                            <h1 className="text-2xl font-black tracking-tighter">Talktok</h1>
+                        </div>
+                        <nav className="flex flex-col gap-1.5 flex-1">
+                            <button 
+                                onClick={() => handleNavigate('home')}
+                                className={`flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all hover:scale-102 ${currentView === 'home' ? 'bg-zinc-800/80 text-white shadow-lg' : 'text-zinc-500 hover:bg-zinc-900 hover:text-white'}`}
+                            >
+                                <Icon name="home" size={22} /> <span className="font-bold">Лента</span>
+                            </button>
+                            <button 
+                                onClick={() => handleNavigate('explore')}
+                                className={`flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all hover:scale-102 ${currentView === 'explore' ? 'bg-zinc-800/80 text-white shadow-lg' : 'text-zinc-500 hover:bg-zinc-900 hover:text-white'}`}
+                            >
+                                <Icon name="compass" size={22} /> <span className="font-bold">Интересное</span>
+                            </button>
+                            <button 
+                                onClick={() => handleNavigate('chats')}
+                                className={`flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all hover:scale-102 ${currentView === 'chats' ? 'bg-zinc-800/80 text-white shadow-lg' : 'text-zinc-500 hover:bg-zinc-900 hover:text-white'}`}
+                            >
+                                <Icon name="message" size={22} /> <span className="font-bold">Уведомления</span>
+                            </button>
+                            <button 
+                                onClick={() => handleNavigate('profile')}
+                                className={`flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all hover:scale-102 ${currentView === 'profile' ? 'bg-zinc-800/80 text-white shadow-lg' : 'text-zinc-500 hover:bg-zinc-900 hover:text-white'}`}
+                            >
+                                <Icon name="user" size={22} /> <span className="font-bold">Профиль</span>
+                            </button>
+                        </nav>
+                    </aside>
+
+                    {/* Main Content */}
+                    <main className="flex-1 relative flex flex-col h-full bg-black overflow-hidden">
+                        {renderMainContent()}
+                    </main>
+
+                    {/* Comments Desktop */}
+                    <aside className={`hidden lg:flex w-80 flex-col bg-[#0d0d0d] border-l border-zinc-800/50 transition-all duration-300 ${showComments ? 'translate-x-0' : 'translate-x-full'}`}>
+                        <div className="p-6 border-b border-zinc-800/50 flex items-center justify-between">
+                            <h2 className="text-lg font-black uppercase tracking-widest text-zinc-400 text-sm">Комментарии</h2>
+                            <button onClick={() => setShowComments(false)} className="text-zinc-400 hover:text-white">
+                                <Icon name="back" size={18} className="rotate-90" />
+                            </button>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                            <div className="flex gap-3">
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-pink-500 shrink-0"></div>
+                                <div className="flex-1">
+                                    <p className="text-sm font-bold">alex_vfx</p>
+                                    <p className="text-sm text-zinc-400 mt-1">Офигенный дизайн, очень чисто!</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-3">
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 shrink-0"></div>
+                                <div className="flex-1">
+                                    <p className="text-sm font-bold">user_pro</p>
+                                    <p className="text-sm text-zinc-400 mt-1">Love this! ❤️</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-3">
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 shrink-0"></div>
+                                <div className="flex-1">
+                                    <p className="text-sm font-bold">creative_mind</p>
+                                    <p className="text-sm text-zinc-400 mt-1">Amazing content!</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-3">
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-red-500 shrink-0"></div>
+                                <div className="flex-1">
+                                    <p className="text-sm font-bold">video_creator</p>
+                                    <p className="text-sm text-zinc-400 mt-1">Subscribed! 🔔</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="p-4">
+                           <div className="relative flex items-center gap-2 bg-zinc-900 rounded-xl p-2 px-3 border border-zinc-800">
+                                <input 
+                                    type="text" 
+                                    value={commentText}
+                                    onChange={(e) => setCommentText(e.target.value)}
+                                    placeholder="Текст..." 
+                                    className="flex-1 bg-transparent border-none text-sm outline-none"
+                                />
+                                <button className={`p-1.5 rounded-lg transition-colors ${commentText ? 'text-white hover:bg-zinc-700' : 'text-zinc-700'}`}>
+                                    <Icon name="send" size={18} />
+                                </button>
+                           </div>
+                        </div>
+                    </aside>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
